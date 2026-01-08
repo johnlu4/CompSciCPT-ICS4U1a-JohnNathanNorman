@@ -3,7 +3,7 @@ package InscryptionMain;
 import javax.swing.*;
 import java.awt.*;
 
-public class gamepanel extends JPanel{
+public class JAnimation extends JPanel{
     // Properties
 
 
@@ -11,7 +11,7 @@ public class gamepanel extends JPanel{
 
 
     // Constructor
-    public gamepanel(){
+    public JAnimation(){
         super();
     }
 

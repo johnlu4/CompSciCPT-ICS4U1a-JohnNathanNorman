@@ -14,6 +14,8 @@ public class JAnimation extends JPanel {
         // Custom painting code
     }
 
+    
+
     // Constructor
     public JAnimation() {
         super();
