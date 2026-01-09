@@ -9,12 +9,14 @@ public class JAnimation extends JPanel {
     // Properties
 
     // Methods
-    public void PaintComponent(Graphics paint){
+    @Override
+    public void paintComponent(Graphics paint){
         super.paintComponent(paint);
         paint.setColor(new Color(95, 78, 51));
 
         paint.fillRect(0,0, 1280, 720);
-        System.out.println("PRINT BRUH PLEASE");
+
+        System.out.println("Repainted");
     }
 
     
@@ -22,8 +24,8 @@ public class JAnimation extends JPanel {
     // Constructor
     public JAnimation() {
         super();
-
-        // Initializate properties
+        setPreferredSize(getPreferredSize());
+        // Initialize properties
 
     }
 }
