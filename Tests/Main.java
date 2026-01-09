@@ -20,7 +20,6 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     // Properties
     JFrame theMainFrame = new JFrame("Inscyption");
 
-
     int port = 0;
 
     Timer Maintimer = new Timer(16, this); // Approximately 60 FPS
@@ -156,6 +155,9 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     public Main(){
         MainMenuPanel.setPreferredSize(new Dimension(1280, 720));
         MainMenuPanel.setLayout(null);
+
+        theAnimationPanel.setPreferredSize(new Dimension(1280, 720));
+        theAnimationPanel.setLayout(null);
 
         HostButton.setBounds(540, 200, 200, 50);
         JoinButton.setBounds(540, 300, 200, 50);
