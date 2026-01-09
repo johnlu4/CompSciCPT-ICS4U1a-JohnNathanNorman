@@ -42,6 +42,10 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
     // Methods
     public void StartGame(){
+        PlayerClass p1 = new PlayerClass("Player 1");
+        PlayerClass p2 = new PlayerClass("Player 2");
+        theAnimationPanel.setPlayers(p1, p2);
+
         theMainFrame.setContentPane(theAnimationPanel);
         theMainFrame.repaint();
         theMainFrame.pack();
