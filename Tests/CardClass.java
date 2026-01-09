@@ -14,6 +14,8 @@ public abstract class CardClass {
 
     // Methods
 
+    
+
     // Constructor
     public CardClass(String strName, BufferedImage imgCardImage, int[] arrStats, String strSigil) {
         // Initialization code
