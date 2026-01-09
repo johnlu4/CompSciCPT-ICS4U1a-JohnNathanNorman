@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.FocusEvent;
+import javax.swing.Timer;
 
 public class Main implements ActionListener, KeyListener, FocusListener{
     // Properties
@@ -21,6 +22,8 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
 
     int port = 0;
+
+    Timer Maintimer = new Timer(16, this); // Approximately 60 FPS
     // Main menu properties
     JPanel MainMenuPanel = new JPanel();
     JButton HostButton = new JButton("Host Game");
@@ -42,6 +45,8 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         theMainFrame.setContentPane(theAnimationPanel);
         theMainFrame.revalidate();
         theMainFrame.repaint();
+        theMainFrame.pack();
+        Maintimer.start();
     }
 
     // ActionListener methods

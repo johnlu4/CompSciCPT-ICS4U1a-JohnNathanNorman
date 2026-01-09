@@ -8,10 +8,11 @@ public class JAnimation extends JPanel {
     // Properties
 
     // Methods
+    public void PaintComponent(Graphics paint){
+        super.paintComponent(paint);
+        paint.setColor(new Color(95, 78, 51));
 
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        // Custom painting code
+        paint.fillRect(0,0, 1280, 720);
     }
 
     
