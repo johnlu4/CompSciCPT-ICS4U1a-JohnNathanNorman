@@ -13,10 +13,10 @@ public class InscryptionDeck{
     public static void main(String[] args){
         String strP1Deck[][] = new String[19][3];
         String strP2Deck[][] = new String[19][3];
-        String strBigDeck[][] = new String[332][4];
+        String strBigDeck[][] = new String[218][4];
         String strEvoDeck[][] = new String[2][3];
         String strSqDeck[][] = new String[0][3];
-        int intCount;
+        int intCount = 0;
         int intCountCount;
         int intCountCountCount;
         String strLine = ("");
@@ -28,33 +28,45 @@ public class InscryptionDeck{
 			//System.out.println("ERROR file not found");
 			System.out.println(e.toString());
 		}
-        //for(intCount = 0; intCount != 44; intCount++){
+        try{
+            strLine = thefile.readLine();
+            //System.out.println(strLine);
+        }catch(IOException e){
+            strLine = null;
+        }
         while(strLine != null){
-             try{
+            try{
                 strLine = thefile.readLine();
-                System.out.println(strLine);
+                strBigDeck[intCount][0] = strLine;
+                System.out.println("deck "+strBigDeck[intCount][0]);
+                strLine = thefile.readLine();
+                System.out.println("next "+strLine);
+                strBigDeck[intCount][1] = strLine;
+                System.out.println("deck "+strBigDeck[intCount][1]);
+                strLine = thefile.readLine();
+                System.out.println("next "+strLine);
+                strBigDeck[intCount][2] = strLine;
+                System.out.println("deck "+strBigDeck[intCount][2]);
+                strLine = thefile.readLine();
+                System.out.println("next "+strLine);
+                strBigDeck[intCount][3] = strLine;
+                System.out.println("deck"+strBigDeck[intCount][3]);
+                strLine = thefile.readLine();
+                System.out.println("next "+strLine);
+                intCount = intCount +1;
+                //System.out.println("next "+strLine);
             }catch(IOException e){
                 strLine = null;
             }
-            for(intCountCount = 0; intCountCount != 3; intCountCount++){
-                for(intCount = 0; intCount != 269; intCountCount++){
-                    strBigDeck[intCount][0] = strLine; 
-                    strBigDeck[intCount+1][1] = strLine;
-                    strBigDeck[intCount+2][2] = strLine;
-                    strBigDeck[intCount+3][3] = strLine;  
-                    //System.out.println(strBigDeck[intCount][0]);
-                    //System.out.println(strBigDeck[intCount+1][0]);
-                    //System.out.println(strBigDeck[intCount+2][0]);
-                    //System.out.println(strBigDeck[intCount+3][0]);
-                    try{
-                        strLine = thefile.readLine();
-                        System.out.println(strLine);
-                    }catch(IOException e){
-                        strLine = null;
-                        System.out.println("AHHHHHHH");
-                    }
-                }
-            }
+            //strBigDeck[intCount][0] = strLine; 
+            //strBigDeck[intCount][1] = strLine;
+            //strBigDeck[intCount][2] = strLine;
+           // strBigDeck[intCount][3] = strLine;
+            //intCount = intCount +1;
+            //System.out.println(strBigDeck[intCount][0]);
+            //System.out.println(strBigDeck[intCount][1]);
+            //System.out.println(strBigDeck[intCount][2]);
+            //System.out.println(strBigDeck[intCount][3]);
         }
         
         
