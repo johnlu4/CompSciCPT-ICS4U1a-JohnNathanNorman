@@ -13,7 +13,7 @@ public class InscryptionDeck{
     public static void main(String[] args){
         String strP1Deck[][] = new String[19][3];
         String strP2Deck[][] = new String[19][3];
-        String strBigDeck[][] = new String[59][4];
+        String strBigDeck[][] = new String[332][4];
         String strEvoDeck[][] = new String[2][3];
         String strSqDeck[][] = new String[0][3];
         int intCount;
@@ -36,16 +36,25 @@ public class InscryptionDeck{
             }catch(IOException e){
                 strLine = null;
             }
-            //for(intCountCount = 0; intCountCount != 3; intCountCount++){
-                //for(intCount = 0; intCount != 58; intCountCount++){
-                    //strBigDeck[intCount][0] = strLine; 
-                    //strBigDeck[intCount][1] = strLine;
-                    //strBigDeck[intCount][2] = strLine;
-                    //strBigDeck[intCount][3] = strLine;   
-                   // System.out.println(strBigDeck[intCountCount][intCount]);
-
-                //}
-            //}
+            for(intCountCount = 0; intCountCount != 3; intCountCount++){
+                for(intCount = 0; intCount != 269; intCountCount++){
+                    strBigDeck[intCount][0] = strLine; 
+                    strBigDeck[intCount+1][1] = strLine;
+                    strBigDeck[intCount+2][2] = strLine;
+                    strBigDeck[intCount+3][3] = strLine;  
+                    //System.out.println(strBigDeck[intCount][0]);
+                    //System.out.println(strBigDeck[intCount+1][0]);
+                    //System.out.println(strBigDeck[intCount+2][0]);
+                    //System.out.println(strBigDeck[intCount+3][0]);
+                    try{
+                        strLine = thefile.readLine();
+                        System.out.println(strLine);
+                    }catch(IOException e){
+                        strLine = null;
+                        System.out.println("AHHHHHHH");
+                    }
+                }
+            }
         }
         
         
