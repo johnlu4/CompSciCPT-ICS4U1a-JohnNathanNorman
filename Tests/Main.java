@@ -1,39 +1,49 @@
 package Tests;
 
-import java.awt.event.ActionListener;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyListener;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.FocusEvent;
-import javax.swing.Timer;
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.awt.*; 
+import javax.imageio.ImageIO;
 
 public class Main implements ActionListener, KeyListener, FocusListener{
     // Properties
-    JFrame theMainFrame = new JFrame("Inscyption");
-
-
     int port = 0;
-
     Timer Maintimer = new Timer(16, this); // Approximately 60 FPS
+
+    String strP1Name = "Player 1";
+    String strP2Name = "Player 2";
+
     // Main menu properties
+    JFrame theMainFrame = new JFrame("Inscyption");
     JPanel MainMenuPanel = new JPanel();
     JButton HostButton = new JButton("Host Game");
     JButton JoinButton = new JButton("Join Game");
+    JTextField nameField = new JTextField("Player Name");
     JTextField IPAddressField = new JTextField("Enter IP Address");
     JTextField PortField = new JTextField("Enter Port Number");
     JButton StartGameButton = new JButton("Start Game");
     JLabel TitleLabel = new JLabel("Inscyption");
     JLabel StatusLabel = new JLabel("Status: Not connected");
+
+    JButton returnMenuButton = new JButton("Return");
+
+    // Help menu properties
+    JPanel helpPanel = new JPanel();
+    JFrame helpFrame = new JFrame("Help Menu");
+
+    JButton helpButton = new JButton("Help");
+
+    // About menu properties
+    JPanel aboutPanel = new JPanel();
+    JFrame aboutFrame = new JFrame("About Menu");
+
+    BufferedImage aboutImage;
+    JButton aboutButton = new JButton("About");
     
+    // Round menu properties
+    JTextArea theChatArea = new JTextArea();
+    JTextField theChatText = new JTextField();
 
     
     // Animation panel
@@ -41,15 +51,28 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     SuperSocketMaster ssm = null;
 
     // Methods
+    public void SwitchTabs(JPanel thePanel){
+
+        theMainFrame.setContentPane(thePanel);
+        theMainFrame.repaint();
+        theMainFrame.pack();
+    }
+
     public void StartGame(){
-        PlayerClass p1 = new PlayerClass("Player 1");
-        PlayerClass p2 = new PlayerClass("Player 2");
+        PlayerClass p1 = new PlayerClass(strP1Name);
+        PlayerClass p2 = new PlayerClass(strP2Name);
         theAnimationPanel.setPlayers(p1, p2);
 
         theMainFrame.setContentPane(theAnimationPanel);
         theMainFrame.repaint();
         theMainFrame.pack();
         Maintimer.start();
+
+        System.out.println("Game Started!");
+        System.out.println("P1: " + p1.strPlayerName);
+        System.out.println("P2: " + p2.strPlayerName);
+
+
     }
 
     // ActionListener methods
@@ -68,13 +91,19 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 return;
             }
             ssm = new SuperSocketMaster(port, this);
-            ssm.connect();
+            try{
+                ssm.connect();
+            }catch(Exception e){
+                System.out.println("Failed to host game session.");
+                return;
+            }
             System.out.println("Hosting game on port " + PortField.getText());
             HostButton.setVisible(false);
             JoinButton.setVisible(false);
-            StatusLabel.setVisible(true);
             IPAddressField.setVisible(false);
             PortField.setVisible(false);
+            StatusLabel.setVisible(true);
+
             StatusLabel.setText("Status: Waiting for a player to join... Port: " + port);
         } else if (event.getSource() == JoinButton) {
             // Join game button clicked
@@ -90,18 +119,24 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             ssm = new SuperSocketMaster(IPAddressField.getText(), port, this);
             boolean connected = ssm.connect();
             System.out.println("Attempting to join game at " + IPAddressField.getText() + ":" + PortField.getText());
+            StatusLabel.setVisible(true);
             if(connected){
                 System.out.println("Successfully joined game session.");
                 JoinButton.setVisible(false);
                 HostButton.setVisible(false);
-                StatusLabel.setVisible(true);
                 IPAddressField.setVisible(false);
                 PortField.setVisible(false);
+                nameField.setVisible(true);
                 StatusLabel.setText("Status: Connected, waiting for host to start the game...");
+                
                 ssm.sendText("PLAYER_JOINED");
             }else {
                 System.out.println("Failed to join game session.");
-
+                StatusLabel.setText("Status: Failed to connect to host.");
+                JoinButton.setVisible(true);
+                HostButton.setVisible(true);
+                IPAddressField.setVisible(true);
+                PortField.setVisible(true);
             }
         } else if (event.getSource() == IPAddressField) {
             // IP address field action
@@ -112,13 +147,22 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             String strLine = ssm.readText();
             System.out.println("Received: " + strLine);
 
+
+            // Main Menu events
             if(strLine.equals("START_GAME")){
                 StartGame();
             }else if (strLine.equals("PLAYER_JOINED")){
                 StatusLabel.setText("Status: Player joined. You can start the game...");
                 StartGameButton.setVisible(true);
+                nameField.setVisible(true);
+            } else if (strLine.startsWith("PLAYER_NAME: ")) {
+                strP2Name = strLine.substring(13);
+                System.out.println("Player 2 Name: " + strP2Name);
             }
 
+            // In round events
+            if(strLine.equals("")) {
+            }
 
         } else if (event.getSource() == StartGameButton) {
             // Start game button clicked
@@ -127,7 +171,23 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             ssm.sendText("START_GAME");
         } else if (event.getSource() == Maintimer) {
             theAnimationPanel.repaint();
+        } else if (event.getSource() == helpButton){
+            SwitchTabs(helpPanel);
+            helpPanel.add(returnMenuButton, BorderLayout.NORTH);
+            returnMenuButton.setVisible(true);
+        } else if (event.getSource() == aboutButton){
+            SwitchTabs(aboutPanel);
+            aboutPanel.add(returnMenuButton, BorderLayout.NORTH);
+            returnMenuButton.setVisible(true);
+        } else if (event.getSource() == returnMenuButton){
+            SwitchTabs(MainMenuPanel);
+        } else if (event.getSource() == nameField){
+            // Name field action
+            strP1Name = nameField.getText();
+            nameField.setText("Player Name: " + strP1Name);
+            ssm.sendText("PLAYER_NAME: " + strP1Name);
         }
+
     }
 
     // KeyListener methods
@@ -147,19 +207,20 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     // FocusListener methods
     public void focusGained(FocusEvent event) {
         // Focus gained handling code
-        if (event.getSource() == IPAddressField) {
+        if (event.getSource() == IPAddressField && IPAddressField.getText().equals("Enter IP Address")) {
             IPAddressField.setText("");
-        } else if (event.getSource() == PortField) {
+        } else if (event.getSource() == PortField && PortField.getText().equals("Enter Port Number")) {
             PortField.setText("");
         }
     }
     public void focusLost(FocusEvent event) {
-        // Focus lost handling code
+
     }
 
 
 
     public Main(){
+        // Main menu setup
         MainMenuPanel.setPreferredSize(new Dimension(1280, 720));
         MainMenuPanel.setLayout(null);
 
@@ -169,10 +230,15 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         JoinButton.setBounds(540, 300, 200, 50);
         IPAddressField.setBounds(490, 400, 300, 40);
         PortField.setBounds(490, 460, 300, 40);
+        nameField.setBounds(490, 350, 300, 40);
         StartGameButton.setBounds(540, 500, 200, 50);
         TitleLabel.setBounds(580, 100, 200, 50);
-        StatusLabel.setBounds(10, 680, 300, 20);
+        StatusLabel.setBounds(500, 600, 400, 30);
+        helpButton.setBounds(10, 650, 100, 30);
+        aboutButton.setBounds(120, 650, 100, 30);
 
+
+        MainMenuPanel.add(nameField);
         MainMenuPanel.add(TitleLabel);
         MainMenuPanel.add(StartGameButton);
         MainMenuPanel.add(HostButton);
@@ -180,19 +246,51 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         MainMenuPanel.add(IPAddressField);
         MainMenuPanel.add(PortField);
         MainMenuPanel.add(StatusLabel);
+        MainMenuPanel.add(helpButton);
+        MainMenuPanel.add(aboutButton);
 
         HostButton.addActionListener(this);
         JoinButton.addActionListener(this);
         IPAddressField.addActionListener(this);
         PortField.addActionListener(this);
         StartGameButton.addActionListener(this);
+        nameField.addActionListener(this);
+        helpButton.addActionListener(this);
+        aboutButton.addActionListener(this);
 
         IPAddressField.addFocusListener(this);
         PortField.addFocusListener(this);
+        nameField.addFocusListener(this);
 
         StartGameButton.setVisible(false);
         StatusLabel.setVisible(false);
+        nameField.setVisible(false);
 
+        returnMenuButton.setBounds(10, 10, 150, 30);
+        returnMenuButton.addActionListener(this);
+
+        returnMenuButton.setVisible(false);
+
+        // Help menu setup
+        helpPanel.setPreferredSize(new Dimension(1280, 720));
+        helpPanel.setLayout(new BorderLayout());
+
+        // About menu setup
+        aboutPanel.setPreferredSize(new Dimension(1280, 720));
+        aboutPanel.setLayout(new BorderLayout());
+        try{
+            aboutImage = ImageIO.read(getClass().getResourceAsStream("AboutMenu.png"));
+        }catch(Exception e){
+            aboutImage = null;
+        }
+
+        if (aboutImage != null) {
+            aboutPanel.add(new JLabel(new ImageIcon(aboutImage)), BorderLayout.CENTER);
+        } else {
+            JLabel missing = new JLabel("About image not found", SwingConstants.CENTER);
+            aboutPanel.add(missing, BorderLayout.CENTER);
+            System.out.println("Warning: AboutMenu.png not found on classpath (Tests/Main.java)");
+        }
 
         theMainFrame.setContentPane(MainMenuPanel);
         theMainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

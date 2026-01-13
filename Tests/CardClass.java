@@ -14,7 +14,11 @@ public abstract class CardClass {
 
     // Methods
 
-    
+    public abstract void attack();
+    public void sigilActivate(PlayerClass p){
+
+    }
+
 
     // Constructor
     public CardClass(String strName, BufferedImage imgCardImage, int[] arrStats, String strSigil) {
