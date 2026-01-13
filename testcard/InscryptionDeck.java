@@ -13,13 +13,13 @@ public class InscryptionDeck{
     public static void main(String[] args){
         String strP1Deck[][] = new String[19][3];
         String strP2Deck[][] = new String[19][3];
-        String strBigDeck[][] = new String[218][4];
+        String strBigDeck[][] = new String[278][6];
         String strEvoDeck[][] = new String[2][3];
-        String strSqDeck[][] = new String[0][3];
+        String strSqDeck1[][] = new String[0][3];
+        String strSqDeck2[][] = new String[0][3];
         int intCount = 0;
-        int intCountCount;
-        int intCountCountCount;
         String strLine = ("");
+        int intRandom = (int)(Math.random()*100+1);
         
         BufferedReader thefile = null;
         try{
@@ -36,39 +36,37 @@ public class InscryptionDeck{
         }
         while(strLine != null){
             try{
-                strLine = thefile.readLine();
-                strBigDeck[intCount][0] = strLine;
-                System.out.println("deck "+strBigDeck[intCount][0]);
-                strLine = thefile.readLine();
-                System.out.println("next "+strLine);
-                strBigDeck[intCount][1] = strLine;
-                System.out.println("deck "+strBigDeck[intCount][1]);
-                strLine = thefile.readLine();
-                System.out.println("next "+strLine);
-                strBigDeck[intCount][2] = strLine;
-                System.out.println("deck "+strBigDeck[intCount][2]);
-                strLine = thefile.readLine();
-                System.out.println("next "+strLine);
-                strBigDeck[intCount][3] = strLine;
-                System.out.println("deck"+strBigDeck[intCount][3]);
-                strLine = thefile.readLine();
-                System.out.println("next "+strLine);
-                intCount = intCount +1;
-                //System.out.println("next "+strLine);
+                //strLine = thefile.readLine();
+                if(strLine != null){
+                    strBigDeck[intCount][0] = strLine;
+                    System.out.println("cur 0 "+strBigDeck[intCount][0]);
+                    strLine = thefile.readLine();
+                    //System.out.println("next "+strLine);
+                    strBigDeck[intCount][1] = strLine;
+                    System.out.println("cur 1 "+strBigDeck[intCount][1]);
+                    strLine = thefile.readLine();
+                    //System.out.println("next "+strLine);
+                    strBigDeck[intCount][2] = strLine;
+                    System.out.println("cur 2 "+strBigDeck[intCount][2]);
+                    strLine = thefile.readLine();
+                    //System.out.println("next "+strLine);
+                    strBigDeck[intCount][3] = strLine;
+                    System.out.println("cur 3 "+strBigDeck[intCount][3]);
+                    strLine = thefile.readLine();
+                    strBigDeck[intCount][4] = strLine;
+                    System.out.println("cur 4 "+strBigDeck[intCount][4]);
+                    intRandom = (int)(Math.random()*100+1);
+                    strBigDeck[intCount][5] = intRandom+"";
+                    System.out.println("cur 5 "+strBigDeck[intCount][5]);
+                    strLine = thefile.readLine();
+                    //System.out.println("next "+strLine);
+                    intCount = intCount +1;
+                    //System.out.println("next "+strLine);
+                }else{
+                }
             }catch(IOException e){
                 strLine = null;
-            }
-            //strBigDeck[intCount][0] = strLine; 
-            //strBigDeck[intCount][1] = strLine;
-            //strBigDeck[intCount][2] = strLine;
-           // strBigDeck[intCount][3] = strLine;
-            //intCount = intCount +1;
-            //System.out.println(strBigDeck[intCount][0]);
-            //System.out.println(strBigDeck[intCount][1]);
-            //System.out.println(strBigDeck[intCount][2]);
-            //System.out.println(strBigDeck[intCount][3]);
+            }    
         }
-        
-        
     }
 }
