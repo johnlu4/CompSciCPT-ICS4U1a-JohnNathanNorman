@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.FocusEvent;
+import javax.swing.Timer;
 
 public class Main implements ActionListener, KeyListener, FocusListener{
     // Properties
@@ -21,6 +22,8 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
 
     int port = 0;
+
+    Timer Maintimer = new Timer(16, this); // Approximately 60 FPS
     // Main menu properties
     JPanel MainMenuPanel = new JPanel();
     JButton HostButton = new JButton("Host Game");
@@ -39,12 +42,18 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
     // Methods
     public void StartGame(){
+        PlayerClass p1 = new PlayerClass("Player 1");
+        PlayerClass p2 = new PlayerClass("Player 2");
+        theAnimationPanel.setPlayers(p1, p2);
+
         theMainFrame.setContentPane(theAnimationPanel);
-        theMainFrame.revalidate();
         theMainFrame.repaint();
+        theMainFrame.pack();
+        Maintimer.start();
     }
 
     // ActionListener methods
+    @Override
     public void actionPerformed(ActionEvent event) {
         // Action handling code
         if (event.getSource() == HostButton) {
@@ -52,15 +61,15 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             try{
                 port = Integer.parseInt(PortField.getText());
             }catch(NumberFormatException e){
-                System.err.println("Port number must be an integer.");
+                System.out.println("Port number must be an integer.");
                 return;
             }catch(Exception e){
-                System.err.println("Invalid port number.");
+                System.out.println("Invalid port number.");
                 return;
             }
             ssm = new SuperSocketMaster(port, this);
             ssm.connect();
-            System.err.println("Hosting game on port " + PortField.getText());
+            System.out.println("Hosting game on port " + PortField.getText());
             HostButton.setVisible(false);
             JoinButton.setVisible(false);
             StatusLabel.setVisible(true);
@@ -72,17 +81,17 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             try{
                 port = Integer.parseInt(PortField.getText());
             }catch(NumberFormatException e){
-                System.err.println("Port number must be an integer.");
+                System.out.println("Port number must be an integer.");
                 return;
             }catch(Exception e){
-                System.err.println("Invalid port number.");
+                System.out.println("Invalid port number.");
                 return;
             }
             ssm = new SuperSocketMaster(IPAddressField.getText(), port, this);
             boolean connected = ssm.connect();
-            System.err.println("Attempting to join game at " + IPAddressField.getText() + ":" + PortField.getText());
+            System.out.println("Attempting to join game at " + IPAddressField.getText() + ":" + PortField.getText());
             if(connected){
-                System.err.println("Successfully joined game session.");
+                System.out.println("Successfully joined game session.");
                 JoinButton.setVisible(false);
                 HostButton.setVisible(false);
                 StatusLabel.setVisible(true);
@@ -91,7 +100,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 StatusLabel.setText("Status: Connected, waiting for host to start the game...");
                 ssm.sendText("PLAYER_JOINED");
             }else {
-                System.err.println("Failed to join game session.");
+                System.out.println("Failed to join game session.");
 
             }
         } else if (event.getSource() == IPAddressField) {
@@ -101,7 +110,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         } else if (event.getSource() == ssm) {
             // SuperSocketMaster event
             String strLine = ssm.readText();
-            System.err.println("Received: " + strLine);
+            System.out.println("Received: " + strLine);
 
             if(strLine.equals("START_GAME")){
                 StartGame();
@@ -113,9 +122,11 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
         } else if (event.getSource() == StartGameButton) {
             // Start game button clicked
-            System.err.println("Starting game...");
+            System.out.println("Starting game...");
             StartGame();
             ssm.sendText("START_GAME");
+        } else if (event.getSource() == Maintimer) {
+            theAnimationPanel.repaint();
         }
     }
 
@@ -151,6 +162,8 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     public Main(){
         MainMenuPanel.setPreferredSize(new Dimension(1280, 720));
         MainMenuPanel.setLayout(null);
+
+        theMainFrame.setPreferredSize(new Dimension(1280, 720));
 
         HostButton.setBounds(540, 200, 200, 50);
         JoinButton.setBounds(540, 300, 200, 50);
