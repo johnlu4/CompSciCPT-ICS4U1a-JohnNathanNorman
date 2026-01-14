@@ -20,6 +20,14 @@ public class InscryptionDeck{
         int intCount = 0;
         String strLine = ("");
         int intRandom = (int)(Math.random()*100+1);
+        int intRow;
+        int intRow2;
+        String strTempName;
+        String strTempCost;
+        String strTempHP;
+        String strTempAttack;
+        String strTempSigil;
+        String strTempOrder;
         
         BufferedReader thefile = null;
         try{
@@ -59,14 +67,56 @@ public class InscryptionDeck{
                     strBigDeck[intCount][5] = intRandom+"";
                     System.out.println("cur 5 "+strBigDeck[intCount][5]);
                     strLine = thefile.readLine();
-                    //System.out.println("next "+strLine);
                     intCount = intCount +1;
-                    //System.out.println("next "+strLine);
-                }else{
                 }
             }catch(IOException e){
                 strLine = null;
             }    
+        }
+        for(intRow2 = 0; intRow2 < 278; intRow++){
+            for(intRow = 0; intRow <278-1-intRow2;intRow++){
+                try{
+                    if(Integer.parseInt(strBigDeck[intRow][5]) >= Integer.parseInt(strBigDeck[intRow+1][5])){
+                        strTempName = strBigDeck[intRow][0];
+                        strTempCost = strBigDeck[intRow][1];
+                        strTempHP = strBigDeck[intRow][2];
+                        strTempAttack = strBigDeck[intRow][3];
+                        strTempSigil = strBigDeck[intRow][4];
+                        strTempOrder = strBigDeck[intRow][5];
+
+                        strBigDeck[intRow][0] = strBigDeck[intRow+1][0];
+                        strBigDeck[intRow][1] = strBigDeck[intRow+1][1];
+                        strBigDeck[intRow][2] = strBigDeck[intRow+1][2];
+                        strBigDeck[intRow][3] = strBigDeck[intRow+1][3];
+                        strBigDeck[intRow][4] = strBigDeck[intRow+1][4];
+                        strBigDeck[intRow][5] = strBigDeck[intRow+1][5];
+
+                        strBigDeck[intRow+1][0] = strTempName;
+                        strBigDeck[intRow+1][1] = strTempCost;
+                        strBigDeck[intRow+1][2] = strTempHP;
+                        strBigDeck[intRow+1][3] = strTempAttack;
+                        strBigDeck[intRow+1][4] = strTempSigil;
+                        strBigDeck[intRow+1][5] = strTempOrder;
+
+                        //System.out.println(strTempName);
+                        //System.out.println(strTempCost);
+                        //System.out.println(strTempHP);
+                        //System.out.println(strTempAttack);
+                        //System.out.println(strTempSigil);
+                        //System.out.println(strTempOrder);
+
+                        System.out.println(strBigDeck[intRow][0]);
+                        System.out.println(strBigDeck[intRow][1]);
+                        System.out.println(strBigDeck[intRow][2]);
+                        System.out.println(strBigDeck[intRow][3]);
+                        System.out.println(strBigDeck[intRow][4]);
+                        System.out.println(strBigDeck[intRow][5]);
+
+                    }
+                }catch(java.lang.NumberFormatException e){
+                    System.out.println("Null");
+                }
+            }
         }
     }
 }
