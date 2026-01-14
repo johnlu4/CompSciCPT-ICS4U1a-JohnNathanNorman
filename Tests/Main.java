@@ -19,6 +19,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     // Main menu properties
     JFrame theMainFrame = new JFrame("Inscyption");
     JPanel MainMenuPanel = new JPanel();
+    BufferedImage MainMenuImage;
     JButton HostButton = new JButton("Host Game");
     JButton JoinButton = new JButton("Join Game");
     JTextField nameField = new JTextField("Player Name");
@@ -278,15 +279,23 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
     public Main(){
         // Main menu setup
+        theMainFrame.setPreferredSize(new Dimension(1280, 720));
+
+        MainMenuImage = getImage("MainMenu.png");
+
+        // Use a panel that paints the background image so components don't get overlapped
+        MainMenuPanel = new BackgroundPanel(MainMenuImage);
         MainMenuPanel.setPreferredSize(new Dimension(1280, 720));
         MainMenuPanel.setLayout(null);
 
-        theMainFrame.setPreferredSize(new Dimension(1280, 720));
+        if (MainMenuImage == null) {
+            System.out.println("Warning: MainMenu.png not found on classpath (Tests/Main.java)");
+        }
 
-        HostButton.setBounds(540, 200, 200, 50);
-        JoinButton.setBounds(540, 300, 200, 50);
-        IPAddressField.setBounds(490, 400, 300, 40);
-        PortField.setBounds(490, 460, 300, 40);
+        HostButton.setBounds(540, 300, 200, 50);
+        JoinButton.setBounds(540, 360, 200, 50);
+        IPAddressField.setBounds(490, 540, 300, 40);
+        PortField.setBounds(490, 580, 300, 40);
         nameField.setBounds(490, 350, 300, 40);
         StartGameButton.setBounds(540, 500, 200, 50);
         TitleLabel.setBounds(580, 100, 200, 50);
@@ -374,5 +383,21 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     // Constructor
     public static void main(String[] args) {
         new Main();
+    }
+    
+    // Small helper panel that paints a background image behind child components
+    static class BackgroundPanel extends JPanel {
+        private BufferedImage bg;
+        BackgroundPanel(BufferedImage img) {
+            this.bg = img;
+            setOpaque(true);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (bg != null) {
+                g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
+            }
+        }
     }
 }
