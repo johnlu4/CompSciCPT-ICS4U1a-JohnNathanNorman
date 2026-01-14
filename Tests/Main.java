@@ -3,12 +3,14 @@ package Tests;
 import javax.swing.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.awt.*; 
 import javax.imageio.ImageIO;
 
 public class Main implements ActionListener, KeyListener, FocusListener{
     // Properties
-    int port = 0;
+    int intPort = 0;
+    int intHelpMenupage = 1;
     Timer Maintimer = new Timer(16, this); // Approximately 60 FPS
 
     String strP1Name = "Player 1";
@@ -29,10 +31,15 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     JButton returnMenuButton = new JButton("Return");
 
     // Help menu properties
-    JPanel helpPanel = new JPanel();
     JFrame helpFrame = new JFrame("Help Menu");
+    JPanel helpPanel = new JPanel();
 
     JButton helpButton = new JButton("Help");
+    JButton LeftHelpButton = new JButton("<");
+    JButton RightHelpButton = new JButton(">");
+
+    BufferedImage helpImage;
+    JLabel helpImageLabel;
 
     // About menu properties
     JPanel aboutPanel = new JPanel();
@@ -58,6 +65,23 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         theMainFrame.pack();
     }
 
+    public BufferedImage getImage(String strImagePath){
+        BufferedImage Image = null;
+        String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/Tests/" + strImagePath;
+        InputStream is = getClass().getResourceAsStream(resourcePath);
+        if (is == null) {
+            System.out.println("Resource not found: " + resourcePath);
+            return null;
+        }
+        try {
+            Image = ImageIO.read(is);
+        } catch (Exception e) {
+            System.out.println("Failed to read image: " + resourcePath + " -> " + e.getMessage());
+            Image = null;
+        }
+        return Image;
+    }
+
     public void StartGame(){
         PlayerClass p1 = new PlayerClass(strP1Name);
         PlayerClass p2 = new PlayerClass(strP2Name);
@@ -67,6 +91,8 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         theMainFrame.repaint();
         theMainFrame.pack();
         Maintimer.start();
+
+        theAnimationPanel.initRound();
 
         System.out.println("Game Started!");
         System.out.println("P1: " + p1.strPlayerName);
@@ -82,7 +108,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         if (event.getSource() == HostButton) {
             // Host game button clicked
             try{
-                port = Integer.parseInt(PortField.getText());
+                intPort = Integer.parseInt(PortField.getText());
             }catch(NumberFormatException e){
                 System.out.println("Port number must be an integer.");
                 return;
@@ -90,7 +116,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 System.out.println("Invalid port number.");
                 return;
             }
-            ssm = new SuperSocketMaster(port, this);
+            ssm = new SuperSocketMaster(intPort, this);
             try{
                 ssm.connect();
             }catch(Exception e){
@@ -104,11 +130,11 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             PortField.setVisible(false);
             StatusLabel.setVisible(true);
 
-            StatusLabel.setText("Status: Waiting for a player to join... Port: " + port);
+            StatusLabel.setText("Status: Waiting for a player to join... Port: " + intPort);
         } else if (event.getSource() == JoinButton) {
             // Join game button clicked
             try{
-                port = Integer.parseInt(PortField.getText());
+                intPort = Integer.parseInt(PortField.getText());
             }catch(NumberFormatException e){
                 System.out.println("Port number must be an integer.");
                 return;
@@ -116,7 +142,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 System.out.println("Invalid port number.");
                 return;
             }
-            ssm = new SuperSocketMaster(IPAddressField.getText(), port, this);
+            ssm = new SuperSocketMaster(IPAddressField.getText(), intPort, this);
             boolean connected = ssm.connect();
             System.out.println("Attempting to join game at " + IPAddressField.getText() + ":" + PortField.getText());
             StatusLabel.setVisible(true);
@@ -138,10 +164,6 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 IPAddressField.setVisible(true);
                 PortField.setVisible(true);
             }
-        } else if (event.getSource() == IPAddressField) {
-            // IP address field action
-        } else if (event.getSource() == PortField) {
-            // Port field action
         } else if (event.getSource() == ssm) {
             // SuperSocketMaster event
             String strLine = ssm.readText();
@@ -186,6 +208,41 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             strP1Name = nameField.getText();
             nameField.setText("Player Name: " + strP1Name);
             ssm.sendText("PLAYER_NAME: " + strP1Name);
+        } else if (event.getSource() == LeftHelpButton){
+            intHelpMenupage -= 1;
+            helpImage = getImage("HelpMenu" + intHelpMenupage + ".png");
+
+            if (helpImage != null) {
+
+                if (helpImageLabel != null) {
+                    helpPanel.remove(helpImageLabel);
+                }
+                helpImageLabel = new JLabel(new ImageIcon(helpImage));
+                helpPanel.add(helpImageLabel, BorderLayout.CENTER);
+                helpPanel.revalidate();
+                helpPanel.repaint();
+            } else {
+                intHelpMenupage += 1; 
+                System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java) for page " + intHelpMenupage);
+            }
+
+        } else if (event.getSource() == RightHelpButton){
+            intHelpMenupage += 1;
+            helpImage = getImage("HelpMenu" + intHelpMenupage + ".png");
+
+            if (helpImage != null) {
+                if (helpImageLabel != null) {
+                    helpPanel.remove(helpImageLabel);
+                }
+                helpImageLabel = new JLabel(new ImageIcon(helpImage));
+                helpPanel.add(helpImageLabel, BorderLayout.CENTER);
+                helpPanel.revalidate();
+                helpPanel.repaint();
+                
+            } else {
+                intHelpMenupage -= 1; 
+                System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java) for page " + intHelpMenupage);
+            }
         }
 
     }
@@ -275,14 +332,29 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         helpPanel.setPreferredSize(new Dimension(1280, 720));
         helpPanel.setLayout(new BorderLayout());
 
+        helpPanel.add(LeftHelpButton);
+        helpPanel.add(RightHelpButton);
+
+        LeftHelpButton.setBounds(10, 650, 50, 30);
+        RightHelpButton.setBounds(1210, 650, 50, 30);
+
+        LeftHelpButton.addActionListener(this);
+        RightHelpButton.addActionListener(this);
+
+        helpImage = getImage("HelpMenu1.png");
+        
+        if (helpImage != null) {
+            helpImageLabel = new JLabel(new ImageIcon(helpImage));
+            helpPanel.add(helpImageLabel, BorderLayout.CENTER);
+        } else {
+            System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java)");
+        }
+
         // About menu setup
         aboutPanel.setPreferredSize(new Dimension(1280, 720));
         aboutPanel.setLayout(new BorderLayout());
-        try{
-            aboutImage = ImageIO.read(getClass().getResourceAsStream("AboutMenu.png"));
-        }catch(Exception e){
-            aboutImage = null;
-        }
+       
+        aboutImage = getImage("AboutMenu.png");
 
         if (aboutImage != null) {
             aboutPanel.add(new JLabel(new ImageIcon(aboutImage)), BorderLayout.CENTER);
