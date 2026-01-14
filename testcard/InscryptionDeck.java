@@ -47,25 +47,25 @@ public class InscryptionDeck{
                 //strLine = thefile.readLine();
                 if(strLine != null){
                     strBigDeck[intCount][0] = strLine;
-                    System.out.println("cur 0 "+strBigDeck[intCount][0]);
+                    //System.out.println("cur 0 "+strBigDeck[intCount][0]);
                     strLine = thefile.readLine();
                     //System.out.println("next "+strLine);
                     strBigDeck[intCount][1] = strLine;
-                    System.out.println("cur 1 "+strBigDeck[intCount][1]);
+                   // System.out.println("cur 1 "+strBigDeck[intCount][1]);
                     strLine = thefile.readLine();
                     //System.out.println("next "+strLine);
                     strBigDeck[intCount][2] = strLine;
-                    System.out.println("cur 2 "+strBigDeck[intCount][2]);
+                    //System.out.println("cur 2 "+strBigDeck[intCount][2]);
                     strLine = thefile.readLine();
                     //System.out.println("next "+strLine);
                     strBigDeck[intCount][3] = strLine;
-                    System.out.println("cur 3 "+strBigDeck[intCount][3]);
+                    //System.out.println("cur 3 "+strBigDeck[intCount][3]);
                     strLine = thefile.readLine();
                     strBigDeck[intCount][4] = strLine;
-                    System.out.println("cur 4 "+strBigDeck[intCount][4]);
+                    //System.out.println("cur 4 "+strBigDeck[intCount][4]);
                     intRandom = (int)(Math.random()*100+1);
                     strBigDeck[intCount][5] = intRandom+"";
-                    System.out.println("cur 5 "+strBigDeck[intCount][5]);
+                    //System.out.println("cur 5 "+strBigDeck[intCount][5]);
                     strLine = thefile.readLine();
                     intCount = intCount +1;
                 }
@@ -97,7 +97,7 @@ public class InscryptionDeck{
                         strBigDeck[intRow+1][3] = strTempAttack;
                         strBigDeck[intRow+1][4] = strTempSigil;
                         strBigDeck[intRow+1][5] = strTempOrder;
-
+                        
                         //System.out.println(strTempName);
                         //System.out.println(strTempCost);
                         //System.out.println(strTempHP);
@@ -105,18 +105,19 @@ public class InscryptionDeck{
                         //System.out.println(strTempSigil);
                         //System.out.println(strTempOrder);
 
-                        System.out.println(strBigDeck[intRow][0]);
-                        System.out.println(strBigDeck[intRow][1]);
-                        System.out.println(strBigDeck[intRow][2]);
-                        System.out.println(strBigDeck[intRow][3]);
-                        System.out.println(strBigDeck[intRow][4]);
-                        System.out.println(strBigDeck[intRow][5]);
-
                     }
                 }catch(java.lang.NumberFormatException e){
-                    System.out.println("Null");
+                    //System.out.println("Null");
                 }
             }
+        }
+        for(intCount = 0; intCount <= 56;intCount++){
+            System.out.println(strBigDeck[intCount][0]);
+            System.out.println(strBigDeck[intCount][1]);
+            System.out.println(strBigDeck[intCount][2]);
+            System.out.println(strBigDeck[intCount][3]);
+            System.out.println(strBigDeck[intCount][4]);
+            System.out.println(strBigDeck[intCount][5]);
         }
     }
 }
