@@ -11,7 +11,14 @@ public class JAnimation extends JPanel {
     private PlayerClass p1;
     private PlayerClass p2;
 
+    public int intScale = 0;
+
+    public String strState = "Drawing Phase";
+
+
     // Methods
+    
+
     @Override
     public void paintComponent(Graphics paint){
         super.paintComponent(paint);
