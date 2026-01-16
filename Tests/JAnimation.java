@@ -7,16 +7,14 @@ import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-public class JAnimation extends JPanel {
+public class JAnimation extends JPanel implements MouseListener {
     // Properties
-    private PlayerClass p1;
-    private PlayerClass p2;
+    private Game game;
 
     public int intScale ;
-
-    public String strState ;
-
 
     // Methods
 
@@ -38,9 +36,7 @@ public class JAnimation extends JPanel {
     }
     
     public void initRound() {
-        // Initialize round properties
-        strState = "DrawingPhase";
-        intScale = 0;
+        // Initialize round properties - now handled by Game
     }
 
     @Override
@@ -50,21 +46,27 @@ public class JAnimation extends JPanel {
 
         paint.fillRect(0,0, 1280, 720);
 
-        // Draw players' names
+        // Draw current phase
         paint.setColor(Color.WHITE);
-        if (p1 != null) {
-            paint.drawString(p1.strPlayerName, 50, 50);
+        if (game != null) {
+            paint.drawString("Phase: " + game.getCurrentPhase(), 600, 50);
         }
 
-        if (p2 != null) {
-            paint.drawString(p2.strPlayerName, 1080, 50);
+        // Draw players' names
+        if (game != null) {
+            if (game.getP1() != null) {
+                paint.drawString(game.getP1().strPlayerName, 50, 50);
+            }
+
+            if (game.getP2() != null) {
+                paint.drawString(game.getP2().strPlayerName, 1080, 50);
+            }
         }
 
     }
 
-    public void setPlayers(PlayerClass p1, PlayerClass p2) {
-        this.p1 = p1;
-        this.p2 = p2;
+    public void setGame(Game game) {
+        this.game = game;
         repaint();
     }
 
@@ -72,7 +74,39 @@ public class JAnimation extends JPanel {
     public JAnimation() {
         super();
         setPreferredSize(new Dimension(1280, 720));
-        // Initialize properties
-
+        addMouseListener(this); // Enable mouse listening for game interactions
     }
+
+    // MouseListener methods for handling game inputs
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (game != null) {
+            int x = e.getX();
+            int y = e.getY();
+            // Example: Determine if click is on a slot (simplified logic)
+            // Assume slots are at y=200-300, x positions for each slot
+            if (y >= 200 && y <= 300) {
+                int slotWidth = 1280 / 4; // 4 slots
+                int slotIndex = x / slotWidth;
+                if (slotIndex >= 0 && slotIndex < 4) {
+                    // Call game method to place card (placeholder - need selected card logic)
+                    System.out.println("Clicked on slot " + slotIndex);
+                    // game.placeCard(slotIndex, selectedCard); // Implement in Game
+                }
+            }
+            // Add more logic for card selection, etc.
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {}
+
+    @Override
+    public void mouseReleased(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
 }

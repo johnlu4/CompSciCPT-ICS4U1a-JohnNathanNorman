@@ -15,6 +15,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
     String strP1Name = "Player 1";
     String strP2Name = "Player 2";
+    Game game = null;
 
     // Main menu properties
     JFrame theMainFrame = new JFrame("Inscyption");
@@ -26,7 +27,6 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     JTextField IPAddressField = new JTextField("Enter IP Address");
     JTextField PortField = new JTextField("Enter Port Number");
     JButton StartGameButton = new JButton("Start Game");
-    JLabel TitleLabel = new JLabel("Inscyption");
     JLabel StatusLabel = new JLabel("Status: Not connected");
 
     JButton returnMenuButton = new JButton("Return");
@@ -86,20 +86,17 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     public void StartGame(){
         PlayerClass p1 = new PlayerClass(strP1Name);
         PlayerClass p2 = new PlayerClass(strP2Name);
-        theAnimationPanel.setPlayers(p1, p2);
+        game = new Game(p1, p2, theAnimationPanel);
+        game.startGame();
 
         theMainFrame.setContentPane(theAnimationPanel);
         theMainFrame.repaint();
         theMainFrame.pack();
         Maintimer.start();
 
-        theAnimationPanel.initRound();
-
         System.out.println("Game Started!");
         System.out.println("P1: " + p1.strPlayerName);
         System.out.println("P2: " + p2.strPlayerName);
-
-
     }
 
     // ActionListener methods
@@ -215,6 +212,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
             if (helpImage != null) {
 
+
                 if (helpImageLabel != null) {
                     helpPanel.remove(helpImageLabel);
                 }
@@ -298,14 +296,12 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         PortField.setBounds(490, 580, 300, 40);
         nameField.setBounds(490, 350, 300, 40);
         StartGameButton.setBounds(540, 500, 200, 50);
-        TitleLabel.setBounds(580, 100, 200, 50);
         StatusLabel.setBounds(500, 600, 400, 30);
         helpButton.setBounds(10, 650, 100, 30);
         aboutButton.setBounds(120, 650, 100, 30);
 
 
         MainMenuPanel.add(nameField);
-        MainMenuPanel.add(TitleLabel);
         MainMenuPanel.add(StartGameButton);
         MainMenuPanel.add(HostButton);
         MainMenuPanel.add(JoinButton);
