@@ -13,7 +13,7 @@ public class InscryptionDeck{
     public static void main(String[] args){
         String strP1Deck[][] = new String[19][3];
         String strP2Deck[][] = new String[19][3];
-        String strBigDeck[][] = new String[278][6];
+        String strBigDeck[][] = new String[56][6];
         String strEvoDeck[][] = new String[2][3];
         String strSqDeck1[][] = new String[0][3];
         String strSqDeck2[][] = new String[0][3];
@@ -42,39 +42,33 @@ public class InscryptionDeck{
         }catch(IOException e){
             strLine = null;
         }
+
+        // read the card info into a 2-dimensional array
         while(strLine != null){
+            String strArray[];
+            int intCol;
             try{
                 //strLine = thefile.readLine();
                 if(strLine != null){
-                    strBigDeck[intCount][0] = strLine;
-                    //System.out.println("cur 0 "+strBigDeck[intCount][0]);
-                    strLine = thefile.readLine();
-                    //System.out.println("next "+strLine);
-                    strBigDeck[intCount][1] = strLine;
-                   // System.out.println("cur 1 "+strBigDeck[intCount][1]);
-                    strLine = thefile.readLine();
-                    //System.out.println("next "+strLine);
-                    strBigDeck[intCount][2] = strLine;
-                    //System.out.println("cur 2 "+strBigDeck[intCount][2]);
-                    strLine = thefile.readLine();
-                    //System.out.println("next "+strLine);
-                    strBigDeck[intCount][3] = strLine;
-                    //System.out.println("cur 3 "+strBigDeck[intCount][3]);
-                    strLine = thefile.readLine();
-                    strBigDeck[intCount][4] = strLine;
-                    //System.out.println("cur 4 "+strBigDeck[intCount][4]);
+                    strArray = strLine.split(",");
+                    for (intCol = 0; intCol < 5; intCol++) {
+                        strBigDeck[intCount][intCol] = strArray[intCol];
+                    }
                     intRandom = (int)(Math.random()*100+1);
                     strBigDeck[intCount][5] = intRandom+"";
-                    //System.out.println("cur 5 "+strBigDeck[intCount][5]);
+                    System.out.println("cur 5 "+strBigDeck[intCount][5]);
+                    
                     strLine = thefile.readLine();
                     intCount = intCount +1;
                 }
+                System.out.println("" + intCount + " rows");
             }catch(IOException e){
                 strLine = null;
             }    
         }
-        for(intRow2 = 0; intRow2 < 278; intRow++){
-            for(intRow = 0; intRow <278-1-intRow2;intRow++){
+
+        for(intRow2 = 0; intRow2 < 56; intRow2++){
+            for(intRow = 0; intRow <56-1-intRow2;intRow++){
                 try{
                     if(Integer.parseInt(strBigDeck[intRow][5]) >= Integer.parseInt(strBigDeck[intRow+1][5])){
                         strTempName = strBigDeck[intRow][0];
@@ -98,25 +92,18 @@ public class InscryptionDeck{
                         strBigDeck[intRow+1][4] = strTempSigil;
                         strBigDeck[intRow+1][5] = strTempOrder;
                         
-                        //System.out.println(strTempName);
-                        //System.out.println(strTempCost);
-                        //System.out.println(strTempHP);
-                        //System.out.println(strTempAttack);
-                        //System.out.println(strTempSigil);
-                        //System.out.println(strTempOrder);
-
                     }
                 }catch(java.lang.NumberFormatException e){
-                    //System.out.println("Null");
+                    System.out.println("Null");
                 }
             }
         }
-        for(intCount = 0; intCount <= 56;intCount++){
-            System.out.println(strBigDeck[intCount][0]);
-            System.out.println(strBigDeck[intCount][1]);
-            System.out.println(strBigDeck[intCount][2]);
-            System.out.println(strBigDeck[intCount][3]);
-            System.out.println(strBigDeck[intCount][4]);
+        for(intCount = 0; intCount < 56;intCount++){
+            System.out.print(strBigDeck[intCount][0] + ", ");
+            System.out.print(strBigDeck[intCount][1] + ", ");
+            System.out.print(strBigDeck[intCount][2] + ", ");
+            System.out.print(strBigDeck[intCount][3] + ", ");
+            System.out.print(strBigDeck[intCount][4] + ", ");
             System.out.println(strBigDeck[intCount][5]);
         }
     }
