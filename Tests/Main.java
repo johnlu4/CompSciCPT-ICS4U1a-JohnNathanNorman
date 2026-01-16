@@ -381,7 +381,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         new Main();
     }
     
-    // Small helper panel that paints a background image behind child components
+    // small helper panel that paints a background image behind child components
     static class BackgroundPanel extends JPanel {
         private BufferedImage bg;
         BackgroundPanel(BufferedImage img) {
