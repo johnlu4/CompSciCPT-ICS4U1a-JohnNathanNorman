@@ -14,10 +14,9 @@ public class JAnimation extends JPanel implements MouseListener {
     // Properties
     private Game game;
 
-    public int intScale ;
+    private BufferedImage bg = getImage("Game.png");
 
-    // Methods
-
+    // Utility Methods
     public BufferedImage getImage(String strImagePath){
         BufferedImage Image = null;
         String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/Tests/" + strImagePath;
@@ -35,6 +34,8 @@ public class JAnimation extends JPanel implements MouseListener {
         return Image;
     }
     
+    // Methods
+
     public void initRound() {
         // Initialize round properties - now handled by Game
     }
@@ -42,6 +43,8 @@ public class JAnimation extends JPanel implements MouseListener {
     @Override
     public void paintComponent(Graphics paint){
         super.paintComponent(paint);
+
+        paint.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
         paint.setColor(new Color(95, 78, 51));
 
         paint.fillRect(0,0, 1280, 720);
@@ -79,19 +82,17 @@ public class JAnimation extends JPanel implements MouseListener {
 
     // MouseListener methods for handling game inputs
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mouseClicked(MouseEvent event) {
         if (game != null) {
-            int x = e.getX();
-            int y = e.getY();
-            // Example: Determine if click is on a slot (simplified logic)
-            // Assume slots are at y=200-300, x positions for each slot
+            int x = event.getX();
+            int y = event.getY();
             if (y >= 200 && y <= 300) {
                 int slotWidth = 1280 / 4; // 4 slots
                 int slotIndex = x / slotWidth;
                 if (slotIndex >= 0 && slotIndex < 4) {
                     // Call game method to place card (placeholder - need selected card logic)
                     System.out.println("Clicked on slot " + slotIndex);
-                    // game.placeCard(slotIndex, selectedCard); // Implement in Game
+                    // game.placeCard(slotIndex, selectedCard); // implement in Game
                 }
             }
             // Add more logic for card selection, etc.
@@ -99,14 +100,14 @@ public class JAnimation extends JPanel implements MouseListener {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {}
+    public void mousePressed(MouseEvent event) {}
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent event) {}
 
     @Override
-    public void mouseEntered(MouseEvent e) {}
+    public void mouseEntered(MouseEvent event) {}
 
     @Override
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent event) {}
 }
