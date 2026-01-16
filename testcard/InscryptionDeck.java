@@ -11,12 +11,12 @@ import java.io.*;
 
 public class InscryptionDeck{
     public static void main(String[] args){
-        String strP1Deck[][] = new String[19][3];
-        String strP2Deck[][] = new String[19][3];
+        String strP1Deck[][] = new String[20][5];
+        String strP2Deck[][] = new String[20][5];
         String strBigDeck[][] = new String[56][6];
-        String strEvoDeck[][] = new String[2][3];
-        String strSqDeck1[][] = new String[0][3];
-        String strSqDeck2[][] = new String[0][3];
+        String strEvoDeck[][] = new String[2][4];
+        String strSqDeck1[][] = new String[0][4];
+        String strSqDeck2[][] = new String[0][4];
         int intCount = 0;
         String strLine = ("");
         int intRandom = (int)(Math.random()*100+1);
@@ -28,8 +28,15 @@ public class InscryptionDeck{
         String strTempAttack;
         String strTempSigil;
         String strTempOrder;
-        
+        boolean blnP1DeckFill = false;
+        boolean blnP2DeckFill = false;
+        int intRow3 = 0;
+        int intRow4 = 0;
+        int intRow5 = 0;
+
         BufferedReader thefile = null;
+        strP1Deck[19][4] = ("Blank");
+        strP2Deck[19][4] = ("Blank");
         try{
 		    thefile = new BufferedReader(new FileReader("bloodcardlist.csv"));	
 		}catch(FileNotFoundException e){
@@ -56,12 +63,12 @@ public class InscryptionDeck{
                     }
                     intRandom = (int)(Math.random()*100+1);
                     strBigDeck[intCount][5] = intRandom+"";
-                    System.out.println("cur 5 "+strBigDeck[intCount][5]);
+                    //System.out.println("cur 5 "+strBigDeck[intCount][5]);
                     
                     strLine = thefile.readLine();
                     intCount = intCount +1;
                 }
-                System.out.println("" + intCount + " rows");
+                //System.out.println("" + intCount + " rows");
             }catch(IOException e){
                 strLine = null;
             }    
@@ -98,13 +105,62 @@ public class InscryptionDeck{
                 }
             }
         }
-        for(intCount = 0; intCount < 56;intCount++){
-            System.out.print(strBigDeck[intCount][0] + ", ");
-            System.out.print(strBigDeck[intCount][1] + ", ");
-            System.out.print(strBigDeck[intCount][2] + ", ");
-            System.out.print(strBigDeck[intCount][3] + ", ");
-            System.out.print(strBigDeck[intCount][4] + ", ");
-            System.out.println(strBigDeck[intCount][5]);
+        //for(intCount = 0; intCount < 56;intCount++){
+            //System.out.print(strBigDeck[intCount][0] + ", ");
+            //System.out.print(strBigDeck[intCount][1] + ", ");
+            //System.out.print(strBigDeck[intCount][2] + ", ");
+            //System.out.print(strBigDeck[intCount][3] + ", ");
+            //System.out.print(strBigDeck[intCount][4] + ", ");
+            //System.out.println(strBigDeck[intCount][5]);
+        //}
+        while(blnP1DeckFill != true){
+            try{
+                if(strP1Deck[19][4].equals("Blank") && strP2Deck[19][4].equals("Blank") ){
+                    intRandom = (int)(Math.random()*100+1);
+                    //System.out.println(intRandom);
+                    if(intRandom < 50 && strP1Deck[19][4].equals("Blank")){
+                        strP1Deck[intRow4][0] = strBigDeck[intRow3][0];
+                        strP1Deck[intRow4][1] = strBigDeck[intRow3][1];
+                        strP1Deck[intRow4][2] = strBigDeck[intRow3][2];
+                        strP1Deck[intRow4][3] = strBigDeck[intRow3][3];
+                        strP1Deck[intRow4][4] = strBigDeck[intRow3][4];
+                        intRow4 = intRow4+1;
+                        intRow3 = intRow3 + 1;
+                    }else if(intRandom > 50 && strP2Deck[19][4].equals("Blank")){
+                        strP2Deck[intRow5][0] = strBigDeck[intRow3][0];
+                        strP2Deck[intRow5][1] = strBigDeck[intRow3][1];
+                        strP2Deck[intRow5][2] = strBigDeck[intRow3][2];
+                        strP2Deck[intRow5][3] = strBigDeck[intRow3][3];
+                        strP2Deck[intRow5][4] = strBigDeck[intRow3][4];
+                        intRow5 = intRow5+1; 
+                        intRow3 = intRow3 + 1;
+                    }
+
+                }else{
+                    blnP1DeckFill = true;
+                    System.out.println("Done");
+                }
+            }catch(java.lang.NullPointerException e){
+                blnP1DeckFill = true;
+                System.out.println("AHHHHH");
+            }
+        }
+         for(intCount = 0; intCount < 20 ;intCount++){
+            System.out.print(strP1Deck[intCount][0] + ", ");
+            System.out.print(strP1Deck[intCount][1] + ", ");
+            System.out.print(strP1Deck[intCount][2] + ", ");
+            System.out.print(strP1Deck[intCount][3] + ", ");
+            System.out.print(strP1Deck[intCount][4] + ", ");
+            System.out.println("");
+        }
+        System.out.println("P2");
+        for(intCount = 0; intCount < 20 ;intCount++){
+            System.out.print(strP2Deck[intCount][0] + ", ");
+            System.out.print(strP2Deck[intCount][1] + ", ");
+            System.out.print(strP2Deck[intCount][2] + ", ");
+            System.out.print(strP2Deck[intCount][3] + ", ");
+            System.out.print(strP2Deck[intCount][4] + ", ");
+            System.out.println("");
         }
     }
 }
