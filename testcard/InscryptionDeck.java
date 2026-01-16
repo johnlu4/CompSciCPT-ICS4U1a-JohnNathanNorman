@@ -115,9 +115,9 @@ public class InscryptionDeck{
         //}
         while(blnP1DeckFill != true){
             try{
-                if(strP1Deck[19][4].equals("Blank") && strP2Deck[19][4].equals("Blank") ){
+                if(strP1Deck[19][4].equals("Blank") || strP2Deck[19][4].equals("Blank")){
                     intRandom = (int)(Math.random()*100+1);
-                    //System.out.println(intRandom);
+                    //cleSystem.out.println(intRandom);
                     if(intRandom < 50 && strP1Deck[19][4].equals("Blank")){
                         strP1Deck[intRow4][0] = strBigDeck[intRow3][0];
                         strP1Deck[intRow4][1] = strBigDeck[intRow3][1];
@@ -125,7 +125,7 @@ public class InscryptionDeck{
                         strP1Deck[intRow4][3] = strBigDeck[intRow3][3];
                         strP1Deck[intRow4][4] = strBigDeck[intRow3][4];
                         intRow4 = intRow4+1;
-                        intRow3 = intRow3 + 1;
+                        intRow3 = intRow3+1;
                     }else if(intRandom > 50 && strP2Deck[19][4].equals("Blank")){
                         strP2Deck[intRow5][0] = strBigDeck[intRow3][0];
                         strP2Deck[intRow5][1] = strBigDeck[intRow3][1];
@@ -133,7 +133,7 @@ public class InscryptionDeck{
                         strP2Deck[intRow5][3] = strBigDeck[intRow3][3];
                         strP2Deck[intRow5][4] = strBigDeck[intRow3][4];
                         intRow5 = intRow5+1; 
-                        intRow3 = intRow3 + 1;
+                        intRow3 = intRow3+1;
                     }
 
                 }else{
