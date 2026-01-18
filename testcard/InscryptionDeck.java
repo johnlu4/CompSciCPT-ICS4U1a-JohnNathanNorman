@@ -15,8 +15,8 @@ public class InscryptionDeck{
         String strP2Deck[][] = new String[20][5];
         String strBigDeck[][] = new String[56][6];
         String strEvoDeck[][] = new String[2][4];
-        String strSqDeck1[][] = new String[0][4];
-        String strSqDeck2[][] = new String[0][4];
+        String strSqDeck1[][] = new String[10][5];
+        String strSqDeck2[][] = new String[10][5];
         int intCount = 0;
         String strLine = ("");
         int intRandom = (int)(Math.random()*100+1);
@@ -146,7 +146,7 @@ public class InscryptionDeck{
             }
         }
          for(intCount = 0; intCount < 20 ;intCount++){
-            System.out.print(strP1Deck[intCount][0] + ", ");
+            System.out.print(intCount + ": " + strP1Deck[intCount][0] + ", ");
             System.out.print(strP1Deck[intCount][1] + ", ");
             System.out.print(strP1Deck[intCount][2] + ", ");
             System.out.print(strP1Deck[intCount][3] + ", ");
@@ -155,12 +155,44 @@ public class InscryptionDeck{
         }
         System.out.println("P2");
         for(intCount = 0; intCount < 20 ;intCount++){
-            System.out.print(strP2Deck[intCount][0] + ", ");
+            System.out.print(intCount + ": " + strP2Deck[intCount][0] + ", ");
             System.out.print(strP2Deck[intCount][1] + ", ");
             System.out.print(strP2Deck[intCount][2] + ", ");
             System.out.print(strP2Deck[intCount][3] + ", ");
             System.out.print(strP2Deck[intCount][4] + ", ");
             System.out.println("");
+        }
+        try{
+             thefile.close();
+        }catch(IOException e){
+        }
+        BufferedReader rodent = null;
+        try{
+		    rodent = new BufferedReader(new FileReader("Squireldeck.csv"));	
+		}catch(FileNotFoundException e){
+			//System.out.println("ERROR file not found");
+			System.out.println(e.toString());
+		}
+        intCount = 0;
+        try{
+            strLine = rodent.readLine();
+            while(strLine != null){
+                String strArray[];
+                int intCol;
+                if(strLine != null){
+                    strArray = strLine.split(",");
+                    for (intCol = 0; intCol < 5; intCol++) {
+                        strSqDeck1[intCount][intCol] = strArray[intCol];
+                        strSqDeck2[intCount][intCol] = strArray[intCol];
+                    }
+                            
+                    strLine = rodent.readLine();
+                    intCount = intCount +1;
+                }
+                System.out.println("" + intCount + " rows");
+            }
+        }catch(IOException e){
+            System.out.println("AHHHHHHHHHHHHHHH");
         }
     }
 }
