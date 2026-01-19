@@ -4,6 +4,7 @@ public class Game {
     // Properties
     private PlayerClass p1;
     private PlayerClass p2;
+    public boolean blnStarted = false;
     private String currentPhase = "DrawingPhase";
     private JAnimation animationPanel;
     
@@ -20,15 +21,19 @@ public class Game {
     // Methods
     public void startGame() {
         // Initialize player decks, blood, etc.
-        // For now, assume decks are set elsewhere
-        p1.intBlood = 0; // Example starting blood
+        p1.intBlood = 0;
         p2.intBlood = 0;
+
+        p1.intLives = 2;
+        p2.intLives = 2;
 
         // Set initial phase
         currentPhase = "DrawingPhase";
 
         // Notify animation panel
         animationPanel.repaint();
+
+        blnStarted = true;
     }
 
     public void nextPhase() {
@@ -36,7 +41,10 @@ public class Game {
             currentPhase = "AttackPhase";
         } else if (currentPhase.equals("AttackPhase")) {
             currentPhase = "DrawingPhase";
+            
             // Reset for next turn, e.g., draw cards
+            p1.drawCard();
+            p2.drawCard();
         }
         // Add more phases as needed
         animationPanel.repaint();

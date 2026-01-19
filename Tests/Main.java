@@ -66,6 +66,13 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         theMainFrame.pack();
     }
 
+    public void SendSystemMessage(String message) {
+        if (ssm != null && game != null && game.blnStarted) {
+            theChatArea.append("[SYSTEM]: " + message + "\n");
+            ssm.sendText("SYSTEM: " + message);
+        }
+    }
+
     public BufferedImage getImage(String strImagePath){
         BufferedImage Image = null;
         String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/Tests/" + strImagePath;
@@ -97,6 +104,10 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         System.out.println("Game Started!");
         System.out.println("P1: " + p1.strPlayerName);
         System.out.println("P2: " + p2.strPlayerName);
+
+        SendSystemMessage("Game Started!");
+        
+        SendSystemMessage("~~ Drawing Phase ~~");
     }
 
     // ActionListener methods
@@ -178,6 +189,14 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             } else if (strLine.startsWith("PLAYER_NAME: ")) {
                 strP2Name = strLine.substring(13);
                 System.out.println("Player 2 Name: " + strP2Name);
+            } else if (game != null && game.blnStarted && strLine.startsWith("CHAT: ")) {
+                String chatMessage = strLine.substring(6);
+                theChatArea.append(strP2Name + ": " + chatMessage + "\n");
+            } else if (game != null && game.blnStarted && strLine.equals("SYSTEM: ")) {
+                String systemMessage = strLine.substring(8);
+                theChatArea.append("[SYSTEM]: " + systemMessage + "\n");
+            }else if (game != null && game.blnStarted && strLine.equals("NEXT_PHASE")) {
+                game.nextPhase();
             }
 
             // In round events
@@ -241,6 +260,13 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             } else {
                 intHelpMenupage -= 1; 
                 System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java) for page " + intHelpMenupage);
+            }
+        } else if (event.getSource() == theChatText) {
+            String chatMessage = theChatText.getText();
+            if (!chatMessage.trim().isEmpty() && game != null && game.blnStarted) {
+                theChatArea.append(strP1Name + ": " + chatMessage + "\n");
+                ssm.sendText("CHAT: " + chatMessage);
+                theChatText.setText("");
             }
         }
 
@@ -311,6 +337,8 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         MainMenuPanel.add(helpButton);
         MainMenuPanel.add(aboutButton);
 
+        StatusLabel.setForeground(Color.WHITE);
+
         HostButton.addActionListener(this);
         JoinButton.addActionListener(this);
         IPAddressField.addActionListener(this);
@@ -328,20 +356,16 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         StatusLabel.setVisible(false);
         nameField.setVisible(false);
 
-        returnMenuButton.setBounds(10, 10, 150, 30);
-        returnMenuButton.addActionListener(this);
-
-        returnMenuButton.setVisible(false);
-
         // Help menu setup
         helpPanel.setPreferredSize(new Dimension(1280, 720));
         helpPanel.setLayout(new BorderLayout());
 
+
         helpPanel.add(LeftHelpButton);
         helpPanel.add(RightHelpButton);
 
-        LeftHelpButton.setBounds(10, 650, 50, 30);
-        RightHelpButton.setBounds(1210, 650, 50, 30);
+        LeftHelpButton.setBounds(10, 650, 100, 30);
+        RightHelpButton.setBounds(1150, 650, 100, 30);
 
         LeftHelpButton.addActionListener(this);
         RightHelpButton.addActionListener(this);
@@ -354,6 +378,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         } else {
             System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java)");
         }
+
 
         // About menu setup
         aboutPanel.setPreferredSize(new Dimension(1280, 720));
@@ -368,6 +393,32 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             aboutPanel.add(missing, BorderLayout.CENTER);
             System.out.println("Warning: AboutMenu.png not found on classpath (Tests/Main.java)");
         }
+
+        returnMenuButton.setBounds(10, 10, 150, 30);
+        returnMenuButton.addActionListener(this);
+
+        returnMenuButton.setVisible(false);
+
+        // JAnimation Panel setup
+        theAnimationPanel.setLayout(null);
+
+        theChatArea.setEditable(false);
+        theChatArea.setLineWrap(true);
+
+        theChatArea.setBackground(new Color(65, 48, 21));
+        theChatText.setBackground(new Color(65, 48, 21));
+        theChatArea.setForeground(Color.WHITE);
+        theChatText.setForeground(Color.WHITE);
+
+        theChatArea.setBounds(0, 0, 250, 630);
+        theChatText.setBounds(0, 650, 250, 30);
+
+        theAnimationPanel.add(theChatArea);
+        theAnimationPanel.add(theChatText);
+        
+        theChatText.addActionListener(this);
+
+
 
         theMainFrame.setContentPane(MainMenuPanel);
         theMainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
