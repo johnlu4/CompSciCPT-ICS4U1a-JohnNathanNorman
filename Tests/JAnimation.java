@@ -10,8 +10,12 @@ import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+
 public class JAnimation extends JPanel implements MouseListener {
     // Properties
+
+    public String cardsprites = "cardsprites/";
+
     private Game game;
 
     private BufferedImage bg = getImage("Game.png");
@@ -33,7 +37,9 @@ public class JAnimation extends JPanel implements MouseListener {
         }
         return Image;
     }
+
     
+
     // Methods
 
     public void initRound() {
@@ -44,10 +50,10 @@ public class JAnimation extends JPanel implements MouseListener {
     public void paintComponent(Graphics paint){
         super.paintComponent(paint);
 
-        paint.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
-        paint.setColor(new Color(95, 78, 51));
+        paint.setColor(new Color(75, 58, 31));
 
         paint.fillRect(0,0, 1280, 720);
+        paint.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
 
         // Draw current phase
         paint.setColor(Color.WHITE);
@@ -100,7 +106,11 @@ public class JAnimation extends JPanel implements MouseListener {
     }
 
     @Override
-    public void mousePressed(MouseEvent event) {}
+    public void mousePressed(MouseEvent event) {
+        if (game != null) {
+            
+        }
+    }
 
     @Override
     public void mouseReleased(MouseEvent event) {}
