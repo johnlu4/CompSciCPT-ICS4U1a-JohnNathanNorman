@@ -92,7 +92,8 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     public void StartGame(){
         PlayerClass p1 = new PlayerClass(strP1Name);
         PlayerClass p2 = new PlayerClass(strP2Name);
-        game = new Game(p1, p2, theAnimationPanel, ssm);
+        game = new Game(p1, p2, theAnimationPanel, ssm, this);
+        theAnimationPanel.setSSM(ssm);
         game.startGame();
 
         theMainFrame.setContentPane(theAnimationPanel);
@@ -209,6 +210,50 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                     System.out.println("Waiting for other player...");
                 }
                 theAnimationPanel.repaint();
+            } else if (game != null && game.blnStarted && strLine.startsWith("PLACE_CARD:")) {
+                // Handle card placement from remote player
+                // Format: PLACE_CARD:slotIndex:cardName
+                String[] parts = strLine.split(":", 3);
+                if (parts.length == 3) {
+                    try {
+                        int slotIndex = Integer.parseInt(parts[1]);
+                        String cardName = parts[2];
+                        
+                        PlayerClass p2 = game.getP2();
+                        
+                        // Try to find the card in P2's hand first
+                        CardClass cardToPlace = null;
+                        for (int i = 0; i < p2.hand.size(); i++) {
+                            if (p2.hand.get(i).strName.equalsIgnoreCase(cardName)) {
+                                cardToPlace = p2.hand.get(i);
+                                p2.hand.remove(i);
+                                break;
+                            }
+                        }
+                        
+                        // If not in hand (because hands aren't synced across network), create a placeholder card
+                        if (cardToPlace == null) {
+                            System.out.println("DEBUG: Card '" + cardName + "' not in hand, creating placeholder");
+                            cardToPlace = new CardClass(cardName, null, new int[]{1, 1, 1}, "None");
+                        }
+                        
+                        // Place the card directly in the slot
+                        boolean wasOccupied = (p2.placedSlots[slotIndex] != null);
+                        if (wasOccupied) {
+                            p2.intBlood += 1; // Gain blood from sacrifice
+                        }
+                        p2.placedSlots[slotIndex] = cardToPlace;
+                        
+                        if (wasOccupied) {
+                            System.out.println(strP2Name + " replaced card in slot " + slotIndex + " with " + cardName);
+                        } else {
+                            System.out.println(strP2Name + " placed " + cardName + " in slot " + slotIndex);
+                        }
+                        theAnimationPanel.repaint();
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid PLACE_CARD message format");
+                    }
+                }
             }
 
             // In round events
