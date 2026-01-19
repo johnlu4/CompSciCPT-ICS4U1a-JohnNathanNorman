@@ -138,30 +138,30 @@ public class InscryptionDeck{
 
                 }else{
                     blnP1DeckFill = true;
-                    System.out.println("Done");
+                    //System.out.println("Done");
                 }
             }catch(java.lang.NullPointerException e){
                 blnP1DeckFill = true;
                 System.out.println("AHHHHH");
             }
         }
-         for(intCount = 0; intCount < 20 ;intCount++){
-            System.out.print(intCount + ": " + strP1Deck[intCount][0] + ", ");
-            System.out.print(strP1Deck[intCount][1] + ", ");
-            System.out.print(strP1Deck[intCount][2] + ", ");
-            System.out.print(strP1Deck[intCount][3] + ", ");
-            System.out.print(strP1Deck[intCount][4] + ", ");
-            System.out.println("");
-        }
-        System.out.println("P2");
-        for(intCount = 0; intCount < 20 ;intCount++){
-            System.out.print(intCount + ": " + strP2Deck[intCount][0] + ", ");
-            System.out.print(strP2Deck[intCount][1] + ", ");
-            System.out.print(strP2Deck[intCount][2] + ", ");
-            System.out.print(strP2Deck[intCount][3] + ", ");
-            System.out.print(strP2Deck[intCount][4] + ", ");
-            System.out.println("");
-        }
+         //for(intCount = 0; intCount < 20 ;intCount++){
+            //System.out.print(intCount + ": " + strP1Deck[intCount][0] + ", ");
+            //System.out.print(strP1Deck[intCount][1] + ", ");
+            //System.out.print(strP1Deck[intCount][2] + ", ");
+            //System.out.print(strP1Deck[intCount][3] + ", ");
+            //System.out.print(strP1Deck[intCount][4] + ", ");
+            //System.out.println("");
+        //}
+        //System.out.println("P2");
+        //for(intCount = 0; intCount < 20 ;intCount++){
+            //System.out.print(intCount + ": " + strP2Deck[intCount][0] + ", ");
+            //System.out.print(strP2Deck[intCount][1] + ", ");
+            //System.out.print(strP2Deck[intCount][2] + ", ");
+            //System.out.print(strP2Deck[intCount][3] + ", ");
+            //System.out.print(strP2Deck[intCount][4] + ", ");
+            //System.out.println("");
+        //}
         try{
              thefile.close();
         }catch(IOException e){
@@ -189,7 +189,7 @@ public class InscryptionDeck{
                     strLine = rodent.readLine();
                     intCount = intCount +1;
                 }
-                System.out.println("" + intCount + " rows");
+                //System.out.println("" + intCount + " rows");
             }
         }catch(IOException e){
             System.out.println("AHHHHHHHHHHHHHHH");
@@ -221,7 +221,7 @@ public class InscryptionDeck{
                     strLine = evo.readLine();
                     intCount = intCount +1;
                 }
-                System.out.println("" + intCount + " rows");
+                //System.out.println("" + intCount + " rows");
             }
         }catch(IOException e){
             System.out.println("AHHHHHHHHHHHHHHH");
