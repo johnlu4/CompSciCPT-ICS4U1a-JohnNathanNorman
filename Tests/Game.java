@@ -13,6 +13,7 @@ public class Game {
     public boolean isInitializationPhase = true; // True during first round
     private String currentPhase = "DrawingPhase";
     private JAnimation animationPanel;
+    private SuperSocketMaster ssm;
     
     public int intScale = 0;
 
@@ -20,10 +21,11 @@ public class Game {
     String strEvoDeck[][] = new String[2][4];
 
     // Constructor
-    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel) {
+    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel, SuperSocketMaster ssm) {
         this.p1 = p1;
         this.p2 = p2;
         this.animationPanel = animationPanel;
+        this.ssm = ssm;
         animationPanel.setGame(this);
     }
 
@@ -367,6 +369,11 @@ public class Game {
         }
         player.isReady = true;
         System.out.println(player.strPlayerName + " is ready!");
+        
+        // Send PLAYER_READY message to other player (only for player 1 - local player)
+        if (playerNumber == 1 && ssm != null) {
+            ssm.sendText("PLAYER_READY");
+        }
         
         // Check if both players are ready
         if (p1.isReady && p2.isReady) {

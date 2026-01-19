@@ -53,11 +53,6 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     JTextArea theChatArea = new JTextArea();
     JTextField theChatText = new JTextField();
     
-    // Drawing phase buttons
-    JButton drawCardButton = new JButton("Draw Card");
-    JButton drawSquirrelButton = new JButton("Draw Squirrel");
-
-    
     // Animation panel
     JAnimation theAnimationPanel = new JAnimation();   
     SuperSocketMaster ssm = null;
@@ -97,7 +92,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     public void StartGame(){
         PlayerClass p1 = new PlayerClass(strP1Name);
         PlayerClass p2 = new PlayerClass(strP2Name);
-        game = new Game(p1, p2, theAnimationPanel);
+        game = new Game(p1, p2, theAnimationPanel, ssm);
         game.startGame();
 
         theMainFrame.setContentPane(theAnimationPanel);
@@ -202,8 +197,18 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             } else if (game != null && game.blnStarted && strLine.equals("NEXT_PHASE")) {
                 game.nextPhase();
             } else if (game != null && game.blnStarted && strLine.equals("PLAYER_READY")) {
-                game.playerReady(2);
+                // Sync player 2's ready status when receiving message from remote player
+                game.getP2().isReady = true;
                 theChatArea.append("[SYSTEM]: " + strP2Name + " is ready!\n");
+                System.out.println(strP2Name + " is ready!");
+                
+                // Check if both players are ready to advance phase
+                if (game.getP1().isReady && game.getP2().isReady) {
+                    game.nextPhase();
+                } else {
+                    System.out.println("Waiting for other player...");
+                }
+                theAnimationPanel.repaint();
             }
 
             // In round events
@@ -274,22 +279,6 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 theChatArea.append(strP1Name + ": " + chatMessage + "\n");
                 ssm.sendText("CHAT: " + chatMessage);
                 theChatText.setText("");
-            }
-        } else if (event.getSource() == drawCardButton) {
-            if (game != null && game.blnStarted && game.getCurrentPhase().equals("DrawingPhase")) {
-                if (game.isInitializationPhase) {
-                    System.out.println("Cannot draw during initialization - place cards or ready up");
-                } else {
-                    game.playerDrawCard(1);
-                }
-            }
-        } else if (event.getSource() == drawSquirrelButton) {
-            if (game != null && game.blnStarted && game.getCurrentPhase().equals("DrawingPhase")) {
-                if (game.isInitializationPhase) {
-                    System.out.println("Cannot draw during initialization - place cards or ready up");
-                } else {
-                    game.playerDrawSquirrel(1);
-                }
             }
         }
 
@@ -435,18 +424,11 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
         theChatArea.setBounds(0, 0, 250, 630);
         theChatText.setBounds(0, 650, 250, 30);
-        
-        drawCardButton.setBounds(260, 650, 120, 30);
-        drawSquirrelButton.setBounds(390, 650, 140, 30);
 
         theAnimationPanel.add(theChatArea);
         theAnimationPanel.add(theChatText);
-        theAnimationPanel.add(drawCardButton);
-        theAnimationPanel.add(drawSquirrelButton);
         
         theChatText.addActionListener(this);
-        drawCardButton.addActionListener(this);
-        drawSquirrelButton.addActionListener(this);
 
 
 

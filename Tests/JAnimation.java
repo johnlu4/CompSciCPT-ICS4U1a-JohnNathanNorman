@@ -3,6 +3,8 @@ package Tests;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.awt.Color;
@@ -28,15 +30,25 @@ public class JAnimation extends JPanel implements MouseListener {
 
     // Slot position constants
     // Bottom 4 card slots (Player 1)
-    private static final int BOTTOM_SLOT_Y = 500;
-    private static final int BOTTOM_SLOT_0_X = 407;
-    private static final int BOTTOM_SLOT_1_X = 548;
-    private static final int BOTTOM_SLOT_2_X = 800;
-    private static final int BOTTOM_SLOT_3_X = 1120;
+    private static final int BOTTOM_SLOT_Y = 450;
+    private static final int BOTTOM_SLOT_0_X = 466;
+    private static final int BOTTOM_SLOT_1_X = 610;
+    private static final int BOTTOM_SLOT_2_X = 740;
+    private static final int BOTTOM_SLOT_3_X = 900;
+
+    // Squirrel slot and Deck slot (top)
+    private static final int TOP_RIGHT_SQUIRREL_X = 1020;
+    private static final int TOP_RIGHT_DECK_X = 1175;
+    private static final int TOP_RIGHT_SLOT_Y = 21;
     
-    // Squirrel slot (bottom)
-    private static final int BOTTOM_SQUIRREL_X = 1150;
-    private static final int BOTTOM_SQUIRREL_Y = 620;
+    // Squirrel slot and Deck slot (bottom)
+    private static final int BOTTOM_RIGHT_SQUIRREL_X = 1020;
+    private static final int BOTTOM_RIGHT_DECK_X = 1175;
+    private static final int BOTTOM_RIGHT_SLOT_Y = 575;
+
+    // Death Slot
+    private int DEATH_SLOT_X = 1175;
+    private int DEATH_SLOT_Y = 280;
     
     // Slot dimensions
     private static final int SLOT_WIDTH = 320;
@@ -98,23 +110,38 @@ public class JAnimation extends JPanel implements MouseListener {
         return getImage(cardsprites + fileName + ".png");
     }
 
-    public BufferedImage placeCardImage(String strCardName, int slotIndex){
-        BufferedImage cardImage = getCardImage(strCardName);
-        if (cardImage == null) return null;
-
-        int slotWidth = 1280 / 4; // Assuming 4 slots
-        BufferedImage placedImage = new BufferedImage(1280, 720, BufferedImage.TYPE_INT_ARGB);
-        Graphics g = placedImage.getGraphics();
-        g.drawImage(cardImage, slotIndex * slotWidth, 200, slotWidth, 100, null);
-        g.dispose();
-        return placedImage;
+    /**
+     * Get the X coordinate for a given slot index
+     * @param slotIndex The slot (0-3)
+     * @return The X coordinate of the slot center
+     */
+    private int getSlotX(int slotIndex) {
+        switch (slotIndex) {
+            case 0: return BOTTOM_SLOT_0_X;
+            case 1: return BOTTOM_SLOT_1_X;
+            case 2: return BOTTOM_SLOT_2_X;
+            case 3: return BOTTOM_SLOT_3_X;
+            default: return BOTTOM_SLOT_0_X;
+        }
     }
-    
 
-    // Methods
-
-    public void initRound() {
-        // Initialize round properties - now handled by Game
+    /**
+     * Draw a card image at the specified slot position
+     * @param g Graphics context
+     * @param strCardName Name of the card
+     * @param slotIndex Slot index (0-3)
+     */
+    private void drawCardAtSlot(Graphics g, String strCardName, int slotIndex) {
+        BufferedImage cardImage = getCardImage(strCardName);
+        if (cardImage == null) return;
+        
+        int slotX = getSlotX(slotIndex);
+        // Center the card at the slot position
+        // Card size: 120x150 (same as debug rectangles)
+        int cardX = slotX - 60; // Center horizontally
+        int cardY = BOTTOM_SLOT_Y - 75; // Center vertically
+        
+        g.drawImage(cardImage, cardX, cardY, 120, 150, this);
     }
 
     @Override
@@ -125,8 +152,10 @@ public class JAnimation extends JPanel implements MouseListener {
 
         paint.fillRect(0,0, 1280, 720);
         paint.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
-
-        paint.drawImage(bellImage, 0, 0, 0, 0, this);
+        
+        if (bellImage != null) {
+            paint.drawImage(bellImage, 0, 0, getWidth(), getHeight(), this);
+        }
 
         // Draw current phase
         paint.setColor(Color.WHITE);
@@ -152,10 +181,7 @@ public class JAnimation extends JPanel implements MouseListener {
             if (p1 != null) {
                 for (int i = 0; i < 4; i++) {
                     if (p1.placedSlots[i] != null) {
-                        BufferedImage cardImg = placeCardImage(p1.placedSlots[i].strName, i);
-                        if (cardImg != null) {
-                            paint.drawImage(cardImg, 0, 0, getWidth(), getHeight(), this);
-                        }
+                        drawCardAtSlot(paint, p1.placedSlots[i].strName, i);
                     }
                 }
                 // Draw P1's hand at bottom
@@ -164,15 +190,106 @@ public class JAnimation extends JPanel implements MouseListener {
             if (p2 != null) {
                 for (int i = 0; i < 4; i++) {
                     if (p2.placedSlots[i] != null) {
-                        BufferedImage cardImg = placeCardImage(p2.placedSlots[i].strName, i);
-                        if (cardImg != null) {
-                            paint.drawImage(cardImg, 0, 0, getWidth(), getHeight(), this);
-                        }
+                        drawCardAtSlot(paint, p2.placedSlots[i].strName, i);
                     }
                 }
             }
         }
 
+        // Draw card back images for deck and squirrel slots
+        drawCardBackImages(paint);
+
+        // DEBUG: Draw clickable area rectangles
+        drawDebugRectangles(paint);
+
+    }
+
+    /**
+     * Draw card back images for deck and squirrel slots
+     * @param g Graphics context
+     */
+    private void drawCardBackImages(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        
+        // Draw bottom deck slot (Regular card back)
+        if (RegularCardBackImage != null) {
+            int cardX = BOTTOM_RIGHT_DECK_X - 60;
+            int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+            g.drawImage(RegularCardBackImage, cardX, cardY, 120, 150, this);
+        }
+        
+        // Draw bottom squirrel slot (Squirrel card back)
+        if (SquirrelCardBackImage != null) {
+            int cardX = BOTTOM_RIGHT_SQUIRREL_X - 60;
+            int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+            g.drawImage(SquirrelCardBackImage, cardX, cardY, 120, 150, this);
+        }
+        
+        // Draw top deck slot (Regular card back, flipped 180 degrees)
+        if (RegularCardBackImage != null) {
+            AffineTransform oldTransform = g2d.getTransform();
+            // Translate to top-left corner of where we want the card
+            // Then translate to center, rotate 180, and offset back
+            int cardX = TOP_RIGHT_DECK_X - 60;
+            int cardY = TOP_RIGHT_SLOT_Y;
+            g2d.translate(cardX + 60, cardY + 75);  // Move to center of card position
+            g2d.rotate(Math.PI);  // Rotate 180 degrees
+            g2d.drawImage(RegularCardBackImage, -60, -75, 120, 150, this);  // Draw centered
+            g2d.setTransform(oldTransform);
+        }
+        
+        // Draw top squirrel slot (Squirrel card back, flipped 180 degrees)
+        if (SquirrelCardBackImage != null) {
+            AffineTransform oldTransform = g2d.getTransform();
+            // Translate to top-left corner of where we want the card
+            // Then translate to center, rotate 180, and offset back
+            int cardX = TOP_RIGHT_SQUIRREL_X - 60;
+            int cardY = TOP_RIGHT_SLOT_Y;
+            g2d.translate(cardX + 60, cardY + 75);  // Move to center of card position
+            g2d.rotate(Math.PI);  // Rotate 180 degrees
+            g2d.drawImage(SquirrelCardBackImage, -60, -75, 120, 150, this);  // Draw centered
+            g2d.setTransform(oldTransform);
+        }
+    }
+
+    /**
+     * Draw debug rectangles for all clickable areas
+     * @param g Graphics context
+     */
+    private void drawDebugRectangles(Graphics g) {
+        // Set semi-transparent color for debug rectangles
+        g.setColor(new Color(255, 0, 0, 100)); // Red with alpha
+        
+        // Draw bottom 4 card slots (Player 1)
+        g.drawRect(BOTTOM_SLOT_0_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
+        g.drawRect(BOTTOM_SLOT_1_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
+        g.drawRect(BOTTOM_SLOT_2_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
+        g.drawRect(BOTTOM_SLOT_3_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
+        
+        // Label the slots
+        g.setColor(Color.YELLOW);
+        g.drawString("Slot 0", BOTTOM_SLOT_0_X - 20, BOTTOM_SLOT_Y);
+        g.drawString("Slot 1", BOTTOM_SLOT_1_X - 20, BOTTOM_SLOT_Y);
+        g.drawString("Slot 2", BOTTOM_SLOT_2_X - 20, BOTTOM_SLOT_Y);
+        g.drawString("Slot 3", BOTTOM_SLOT_3_X - 20, BOTTOM_SLOT_Y);
+        
+        // Draw bell area
+        g.setColor(new Color(0, 255, 0, 100)); // Green with alpha
+        g.drawRect(BELL_X, BELL_Y, BELL_WIDTH, BELL_HEIGHT);
+        g.setColor(Color.YELLOW);
+        g.drawString("Bell", BELL_X + 30, BELL_Y + 60);
+        
+        // Draw bottom squirrel slot
+        g.setColor(new Color(0, 0, 255, 100)); // Blue with alpha
+        g.drawRect(BOTTOM_RIGHT_SQUIRREL_X - 60, BOTTOM_RIGHT_SLOT_Y - 75, 120, 150);
+        g.setColor(Color.YELLOW);
+        g.drawString("Squirrel", BOTTOM_RIGHT_SQUIRREL_X - 25, BOTTOM_RIGHT_SLOT_Y);
+        
+        // Draw bottom deck slot
+        g.setColor(new Color(255, 255, 0, 100)); // Yellow with alpha
+        g.drawRect(BOTTOM_RIGHT_DECK_X - 60, BOTTOM_RIGHT_SLOT_Y - 75, 120, 150);
+        g.setColor(Color.WHITE);
+        g.drawString("Deck", BOTTOM_RIGHT_DECK_X - 15, BOTTOM_RIGHT_SLOT_Y);
     }
 
     /**
@@ -214,7 +331,11 @@ public class JAnimation extends JPanel implements MouseListener {
                 g.drawImage(cardImage, cardX, cardY, HAND_CARD_WIDTH, HAND_CARD_HEIGHT, this);
                 
                 // Draw card border for visibility
-                g.setColor(i == selectedCardIndex ? Color.GREEN : Color.YELLOW);
+                if(i == selectedCardIndex){
+                    g.setColor(Color.GREEN);
+                }else{
+                    g.setColor(Color.ORANGE);
+                }
                 g.drawRect(cardX, cardY, HAND_CARD_WIDTH, HAND_CARD_HEIGHT);
             } else {
                 // Draw placeholder if image not found
@@ -278,20 +399,66 @@ public class JAnimation extends JPanel implements MouseListener {
                 }
             }
             
-            // Check bottom 4 card slots (Player 1)
-            if (y >= BOTTOM_SLOT_Y - SLOT_HEIGHT/2 && y <= BOTTOM_SLOT_Y + SLOT_HEIGHT/2) {
-                int slotIndex = x / SLOT_WIDTH;
-                if (slotIndex >= 0 && slotIndex < 4) {
-                    System.out.println("Clicked on bottom slot " + slotIndex + " at (" + x + ", " + y + ")");
-                    // game.placeCard(1, selectedCard, slotIndex); // Player 1
+            // Check bottom 4 card slots (Player 1) - place card if one is selected
+            if (selectedCardIndex >= 0 && p1 != null && selectedCardIndex < p1.hand.size()) {
+                CardClass selectedCard = p1.hand.get(selectedCardIndex);
+                
+                // Slot 0
+                if (x >= BOTTOM_SLOT_0_X - 60 && x <= BOTTOM_SLOT_0_X + 60 &&
+                    y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                    System.out.println("Clicked on bottom slot 0 - Attempting to place card");
+                    if (p1.placeCard(0, selectedCard)) {
+                        selectedCardIndex = -1; // Deselect after placing
+                        repaint();
+                    }
+                    return;
+                }
+                // Slot 1
+                if (x >= BOTTOM_SLOT_1_X - 60 && x <= BOTTOM_SLOT_1_X + 60 &&
+                    y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                    System.out.println("Clicked on bottom slot 1 - Attempting to place card");
+                    if (p1.placeCard(1, selectedCard)) {
+                        selectedCardIndex = -1;
+                        repaint();
+                    }
+                    return;
+                }
+                // Slot 2
+                if (x >= BOTTOM_SLOT_2_X - 60 && x <= BOTTOM_SLOT_2_X + 60 &&
+                    y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                    System.out.println("Clicked on bottom slot 2 - Attempting to place card");
+                    if (p1.placeCard(2, selectedCard)) {
+                        selectedCardIndex = -1;
+                        repaint();
+                    }
+                    return;
+                }
+                // Slot 3
+                if (x >= BOTTOM_SLOT_3_X - 60 && x <= BOTTOM_SLOT_3_X + 60 &&
+                    y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                    System.out.println("Clicked on bottom slot 3 - Attempting to place card");
+                    if (p1.placeCard(3, selectedCard)) {
+                        selectedCardIndex = -1;
+                        repaint();
+                    }
+                    return;
                 }
             }
             
             // Check bottom squirrel slot
-            if (x >= BOTTOM_SQUIRREL_X - 75 && x <= BOTTOM_SQUIRREL_X + 75 &&
-                y >= BOTTOM_SQUIRREL_Y - 70 && y <= BOTTOM_SQUIRREL_Y + 70) {
+            if (x >= BOTTOM_RIGHT_SQUIRREL_X - 60 && x <= BOTTOM_RIGHT_SQUIRREL_X + 60 &&
+                y >= BOTTOM_RIGHT_SLOT_Y - 75 && y <= BOTTOM_RIGHT_SLOT_Y + 75) {
                 System.out.println("Clicked on bottom squirrel slot at (" + x + ", " + y + ")");
                 // game.placeSquirrel(1); // Player 1
+                return;
+            }
+            
+            // Check bottom deck slot
+            if (x >= BOTTOM_RIGHT_DECK_X - 60 && x <= BOTTOM_RIGHT_DECK_X + 60 &&
+                y >= BOTTOM_RIGHT_SLOT_Y - 75 && y <= BOTTOM_RIGHT_SLOT_Y + 75) {
+                System.out.println("Clicked on bottom deck slot at (" + x + ", " + y + ")");
+                // Draw card functionality
+                return;
             }
             
             // Add more logic for card selection, etc.
