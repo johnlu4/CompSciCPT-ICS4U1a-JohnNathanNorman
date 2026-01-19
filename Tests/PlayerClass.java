@@ -12,6 +12,7 @@ public class PlayerClass {
     public String strPlayerName;
     public int intBlood = 0;
     public int intLives = 2;
+    public int intScale = 0;
 
 
     public String strDeck[][] = new String[20][5];
@@ -137,6 +138,7 @@ public class PlayerClass {
         deckIndex = 0;
         squirrelIndex = 0;
         hand.clear();
+        intScale = 0;
         for (int i = 0; i < placedSlots.length; i++) {
             placedSlots[i] = null;
         }

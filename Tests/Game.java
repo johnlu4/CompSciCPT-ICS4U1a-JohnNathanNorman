@@ -14,18 +14,18 @@ public class Game {
     private String currentPhase = "DrawingPhase";
     private JAnimation animationPanel;
     private SuperSocketMaster ssm;
-    
-    public int intScale = 0;
+    private Main mainInstance;
 
     String strBigDeck[][] = new String[56][6];
     String strEvoDeck[][] = new String[2][4];
 
     // Constructor
-    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel, SuperSocketMaster ssm) {
+    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel, SuperSocketMaster ssm, Main mainInstance) {
         this.p1 = p1;
         this.p2 = p2;
         this.animationPanel = animationPanel;
         this.ssm = ssm;
+        this.mainInstance = mainInstance;
         animationPanel.setGame(this);
     }
 
@@ -288,6 +288,11 @@ public class Game {
                 currentPhase = "AttackPhase";
                 System.out.println("Both players ready - Starting Attack Phase");
                 
+                // Send system message for phase change
+                if (mainInstance != null) {
+                    mainInstance.SendSystemMessage("~~ Attack Phase ~~");
+                }
+                
                 // End initialization phase after first ready-up
                 if (isInitializationPhase) {
                     isInitializationPhase = false;
@@ -297,6 +302,9 @@ public class Game {
                 System.out.println("Waiting for players to ready up...");
             }
         } else if (currentPhase.equals("AttackPhase")) {
+            // Check scale difference after attack phase
+            checkScaleDifference();
+            
             currentPhase = "DrawingPhase";
             // Reset drawing phase tracking for both players
             p1.resetDrawPhase();
@@ -370,8 +378,9 @@ public class Game {
         player.isReady = true;
         System.out.println(player.strPlayerName + " is ready!");
         
-        // Send PLAYER_READY message to other player (only for player 1 - local player)
-        if (playerNumber == 1 && ssm != null) {
+        // Send ready message to both clients (via Main's SendSystemMessage)
+        if (playerNumber == 1 && mainInstance != null) {
+            mainInstance.SendSystemMessage(player.strPlayerName + " is ready!");
             ssm.sendText("PLAYER_READY");
         }
         
@@ -394,6 +403,30 @@ public class Game {
 
     public PlayerClass getP2() {
         return p2;
+    }
+
+    /**
+     * Check scale difference between players
+     * If difference is 5 or more, losing player loses 1 life and both scales reset
+     */
+    private void checkScaleDifference() {
+        int scaleDiff = p1.intScale - p2.intScale;
+        
+        if (scaleDiff >= 5) {
+            // P1 is dominating, P2 loses a life
+            p2.intLives -= 1;
+            System.out.println("Scale tipped! " + p2.strPlayerName + " loses 1 life. Lives remaining: " + p2.intLives);
+            p1.intScale = 0;
+            p2.intScale = 0;
+            animationPanel.repaint();
+        } else if (scaleDiff <= -5) {
+            // P2 is dominating, P1 loses a life
+            p1.intLives -= 1;
+            System.out.println("Scale tipped! " + p1.strPlayerName + " loses 1 life. Lives remaining: " + p1.intLives);
+            p1.intScale = 0;
+            p2.intScale = 0;
+            animationPanel.repaint();
+        }
     }
 
     // methods for gameplay logic, e.g., executeAttack, checkWinCondition, etc.
