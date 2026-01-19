@@ -14,7 +14,7 @@ public class InscryptionDeck{
         String strP1Deck[][] = new String[20][5];
         String strP2Deck[][] = new String[20][5];
         String strBigDeck[][] = new String[56][6];
-        String strEvoDeck[][] = new String[2][4];
+        String strEvoDeck[][] = new String[12][5];
         String strSqDeck1[][] = new String[10][5];
         String strSqDeck2[][] = new String[10][5];
         int intCount = 0;
@@ -187,6 +187,38 @@ public class InscryptionDeck{
                     }
                             
                     strLine = rodent.readLine();
+                    intCount = intCount +1;
+                }
+                System.out.println("" + intCount + " rows");
+            }
+        }catch(IOException e){
+            System.out.println("AHHHHHHHHHHHHHHH");
+        }
+
+        try{
+             rodent.close();
+        }catch(IOException e){
+        }
+        BufferedReader evo = null;
+        try{
+		    evo = new BufferedReader(new FileReader("extracards.csv"));	
+		}catch(FileNotFoundException e){
+			//System.out.println("ERROR file not found");
+			System.out.println(e.toString());
+		}
+        intCount = 0;
+        try{
+            strLine = evo.readLine();
+            while(strLine != null){
+                String strArray[];
+                int intCol;
+                if(strLine != null){
+                    strArray = strLine.split(",");
+                    for (intCol = 0; intCol < 5; intCol++) {
+                        strEvoDeck[intCount][intCol] = strArray[intCol];
+                    }
+                            
+                    strLine = evo.readLine();
                     intCount = intCount +1;
                 }
                 System.out.println("" + intCount + " rows");
