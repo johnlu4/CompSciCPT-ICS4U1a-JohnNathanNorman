@@ -52,6 +52,10 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     // Round menu properties
     JTextArea theChatArea = new JTextArea();
     JTextField theChatText = new JTextField();
+    
+    // Drawing phase buttons
+    JButton drawCardButton = new JButton("Draw Card");
+    JButton drawSquirrelButton = new JButton("Draw Squirrel");
 
     
     // Animation panel
@@ -195,8 +199,11 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             } else if (game != null && game.blnStarted && strLine.equals("SYSTEM: ")) {
                 String systemMessage = strLine.substring(8);
                 theChatArea.append("[SYSTEM]: " + systemMessage + "\n");
-            }else if (game != null && game.blnStarted && strLine.equals("NEXT_PHASE")) {
+            } else if (game != null && game.blnStarted && strLine.equals("NEXT_PHASE")) {
                 game.nextPhase();
+            } else if (game != null && game.blnStarted && strLine.equals("PLAYER_READY")) {
+                game.playerReady(2);
+                theChatArea.append("[SYSTEM]: " + strP2Name + " is ready!\n");
             }
 
             // In round events
@@ -267,6 +274,22 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 theChatArea.append(strP1Name + ": " + chatMessage + "\n");
                 ssm.sendText("CHAT: " + chatMessage);
                 theChatText.setText("");
+            }
+        } else if (event.getSource() == drawCardButton) {
+            if (game != null && game.blnStarted && game.getCurrentPhase().equals("DrawingPhase")) {
+                if (game.isInitializationPhase) {
+                    System.out.println("Cannot draw during initialization - place cards or ready up");
+                } else {
+                    game.playerDrawCard(1);
+                }
+            }
+        } else if (event.getSource() == drawSquirrelButton) {
+            if (game != null && game.blnStarted && game.getCurrentPhase().equals("DrawingPhase")) {
+                if (game.isInitializationPhase) {
+                    System.out.println("Cannot draw during initialization - place cards or ready up");
+                } else {
+                    game.playerDrawSquirrel(1);
+                }
             }
         }
 
@@ -412,11 +435,18 @@ public class Main implements ActionListener, KeyListener, FocusListener{
 
         theChatArea.setBounds(0, 0, 250, 630);
         theChatText.setBounds(0, 650, 250, 30);
+        
+        drawCardButton.setBounds(260, 650, 120, 30);
+        drawSquirrelButton.setBounds(390, 650, 140, 30);
 
         theAnimationPanel.add(theChatArea);
         theAnimationPanel.add(theChatText);
+        theAnimationPanel.add(drawCardButton);
+        theAnimationPanel.add(drawSquirrelButton);
         
         theChatText.addActionListener(this);
+        drawCardButton.addActionListener(this);
+        drawSquirrelButton.addActionListener(this);
 
 
 

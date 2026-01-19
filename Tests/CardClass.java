@@ -2,7 +2,7 @@ package Tests;
 
 import java.awt.image.BufferedImage;
 
-public abstract class CardClass {
+public class CardClass {
     // Properties
     public String strName;
     public BufferedImage imgCardImage;
@@ -14,7 +14,10 @@ public abstract class CardClass {
 
     // Methods
 
-    public abstract void attack();
+    public void attack() {
+        System.out.println(strName + " attacks for " + intAttack + " damage!");
+    }
+    
     public void sigilActivate(PlayerClass p){
 
     }
