@@ -16,6 +16,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     String strP1Name = "Player 1";
     String strP2Name = "Player 2";
     Game game = null;
+    boolean blnIsHost = false; // Track if this client is the host
 
     // Main menu properties
     JFrame theMainFrame = new JFrame("Inscyption");
@@ -52,6 +53,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     // Round menu properties
     JTextArea theChatArea = new JTextArea();
     JTextField theChatText = new JTextField();
+    JScrollPane theScroll = new JScrollPane(theChatArea);
     
     // Animation panel
     JAnimation theAnimationPanel = new JAnimation();   
@@ -92,7 +94,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     public void StartGame(){
         PlayerClass p1 = new PlayerClass(strP1Name);
         PlayerClass p2 = new PlayerClass(strP2Name);
-        game = new Game(p1, p2, theAnimationPanel, ssm, this);
+        game = new Game(p1, p2, theAnimationPanel, ssm, this, blnIsHost);
         theAnimationPanel.setSSM(ssm);
         game.startGame();
 
@@ -138,6 +140,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             IPAddressField.setVisible(false);
             PortField.setVisible(false);
             StatusLabel.setVisible(true);
+            blnIsHost = true; // Mark this client as host
 
             StatusLabel.setText("Status: Waiting for a player to join... Port: " + intPort);
         } else if (event.getSource() == JoinButton) {
@@ -197,6 +200,107 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 theChatArea.append("[SYSTEM]: " + systemMessage + "\n");
             } else if (game != null && game.blnStarted && strLine.equals("NEXT_PHASE")) {
                 game.nextPhase();
+            } else if (game != null && game.blnStarted && strLine.equals("RETURN_TO_DRAWING")) {
+                // Other client completed attack phase, sync back to drawing phase
+                System.out.println("Received RETURN_TO_DRAWING from remote");
+                game.syncReturnToDrawing();
+                theAnimationPanel.repaint();
+            } else if (game != null && game.blnStarted && strLine.startsWith("ATTACK_ANIM:")) {
+                // Handle attack animation from host
+                // Format: ATTACK_ANIM:slotIndex:isBottomAttacking
+                String[] parts = strLine.split(":");
+                if (parts.length == 3) {
+                    try {
+                        int slotIndex = Integer.parseInt(parts[1]);
+                        boolean isBottomAttacking = Boolean.parseBoolean(parts[2]);
+                        
+                        // Get the attacking card
+                        CardClass attackingCard = null;
+                        if (isBottomAttacking) {
+                            attackingCard = game.getP2().placedSlots[slotIndex]; // Client sees host as P2
+                        } else {
+                            attackingCard = game.getP1().placedSlots[slotIndex]; // Client sees self as P1
+                        }
+                        
+                        if (attackingCard != null) {
+                            theAnimationPanel.startAttackAnimation(attackingCard, slotIndex, !isBottomAttacking); // Flip perspective
+                            System.out.println("Received attack animation: slot " + slotIndex + ", isBottomAttacking=" + !isBottomAttacking);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error parsing ATTACK_ANIM: " + e.getMessage());
+                    }
+                }
+            } else if (game != null && game.blnStarted && strLine.startsWith("DAMAGE_RESULT:")) {
+                // Handle damage result from host
+                // Format: DAMAGE_RESULT:slotIndex:isBottomAttacking:newHP_or_destroyed:defenderBlood
+                String[] parts = strLine.split(":");
+                if (parts.length == 5) {
+                    try {
+                        int slotIndex = Integer.parseInt(parts[1]);
+                        boolean isBottomAttacking = Boolean.parseBoolean(parts[2]);
+                        String hpResult = parts[3];
+                        int defenderBlood = Integer.parseInt(parts[4]);
+                        
+                        // Get defender (opposite of attacker)
+                        PlayerClass defender = isBottomAttacking ? game.getP1() : game.getP2(); // Flip perspective
+                        
+                        if (hpResult.equals("destroyed")) {
+                            // Card was destroyed
+                            defender.placedSlots[slotIndex] = null;
+                            defender.intBlood = defenderBlood;
+                            System.out.println("Card at slot " + slotIndex + " destroyed. Defender blood: " + defenderBlood);
+                        } else {
+                            // Card took damage but survived
+                            int newHP = Integer.parseInt(hpResult);
+                            if (defender.placedSlots[slotIndex] != null) {
+                                defender.placedSlots[slotIndex].intHealth = newHP;
+                                defender.intBlood = defenderBlood;
+                                System.out.println("Card at slot " + slotIndex + " HP: " + newHP + ". Defender blood: " + defenderBlood);
+                            }
+                        }
+                        theAnimationPanel.repaint();
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error parsing DAMAGE_RESULT: " + e.getMessage());
+                    }
+                }
+            } else if (game != null && game.blnStarted && strLine.startsWith("SCALE_UPDATE:")) {
+                // Handle scale update from host
+                // Format: SCALE_UPDATE:p1Scale:p2Scale
+                String[] parts = strLine.split(":");
+                if (parts.length == 3) {
+                    try {
+                        int p1Scale = Integer.parseInt(parts[1]);
+                        int p2Scale = Integer.parseInt(parts[2]);
+                        
+                        // Swap because client sees host as P2
+                        game.getP1().intScale = p2Scale;
+                        game.getP2().intScale = p1Scale;
+                        
+                        System.out.println("Scale updated - P1: " + game.getP1().intScale + " | P2: " + game.getP2().intScale);
+                        theAnimationPanel.repaint();
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error parsing SCALE_UPDATE: " + e.getMessage());
+                    }
+                }
+            } else if (game != null && game.blnStarted && strLine.startsWith("LIFE_UPDATE:")) {
+                // Handle life update from host
+                // Format: LIFE_UPDATE:p1Lives:p2Lives
+                String[] parts = strLine.split(":");
+                if (parts.length == 3) {
+                    try {
+                        int p1Lives = Integer.parseInt(parts[1]);
+                        int p2Lives = Integer.parseInt(parts[2]);
+                        
+                        // Swap because client sees host as P2
+                        game.getP1().intLives = p2Lives;
+                        game.getP2().intLives = p1Lives;
+                        
+                        System.out.println("Lives updated - P1: " + game.getP1().intLives + " | P2: " + game.getP2().intLives);
+                        theAnimationPanel.repaint();
+                    } catch (NumberFormatException e) {
+                        System.out.println("Error parsing LIFE_UPDATE: " + e.getMessage());
+                    }
+                }
             } else if (game != null && game.blnStarted && strLine.equals("PLAYER_READY")) {
                 // Sync player 2's ready status when receiving message from remote player
                 game.getP2().isReady = true;
@@ -212,30 +316,21 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 theAnimationPanel.repaint();
             } else if (game != null && game.blnStarted && strLine.startsWith("PLACE_CARD:")) {
                 // Handle card placement from remote player
-                // Format: PLACE_CARD:slotIndex:cardName
-                String[] parts = strLine.split(":", 3);
-                if (parts.length == 3) {
+                // Format: PLACE_CARD:slotIndex:cardName:cost:hp:attack:sigil
+                String[] parts = strLine.split(":", 7);
+                if (parts.length == 7) {
                     try {
                         int slotIndex = Integer.parseInt(parts[1]);
                         String cardName = parts[2];
+                        int cost = Integer.parseInt(parts[3]);
+                        int hp = Integer.parseInt(parts[4]);
+                        int attack = Integer.parseInt(parts[5]);
+                        String sigil = parts[6];
                         
                         PlayerClass p2 = game.getP2();
                         
-                        // Try to find the card in P2's hand first
-                        CardClass cardToPlace = null;
-                        for (int i = 0; i < p2.hand.size(); i++) {
-                            if (p2.hand.get(i).strName.equalsIgnoreCase(cardName)) {
-                                cardToPlace = p2.hand.get(i);
-                                p2.hand.remove(i);
-                                break;
-                            }
-                        }
-                        
-                        // If not in hand (because hands aren't synced across network), create a placeholder card
-                        if (cardToPlace == null) {
-                            System.out.println("DEBUG: Card '" + cardName + "' not in hand, creating placeholder");
-                            cardToPlace = new CardClass(cardName, null, new int[]{1, 1, 1}, "None");
-                        }
+                        // Create card with actual stats from the message
+                        CardClass cardToPlace = new CardClass(cardName, null, new int[]{hp, attack, cost}, sigil);
                         
                         // Place the card directly in the slot
                         boolean wasOccupied = (p2.placedSlots[slotIndex] != null);
@@ -245,9 +340,9 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                         p2.placedSlots[slotIndex] = cardToPlace;
                         
                         if (wasOccupied) {
-                            System.out.println(strP2Name + " replaced card in slot " + slotIndex + " with " + cardName);
+                            System.out.println(strP2Name + " replaced card in slot " + slotIndex + " with " + cardName + " (HP:" + hp + ", ATK:" + attack + ")");
                         } else {
-                            System.out.println(strP2Name + " placed " + cardName + " in slot " + slotIndex);
+                            System.out.println(strP2Name + " placed " + cardName + " in slot " + slotIndex + " (HP:" + hp + ", ATK:" + attack + ")");
                         }
                         theAnimationPanel.repaint();
                     } catch (NumberFormatException e) {
@@ -467,10 +562,10 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         theChatArea.setForeground(Color.WHITE);
         theChatText.setForeground(Color.WHITE);
 
-        theChatArea.setBounds(0, 0, 250, 630);
+        theScroll.setBounds(0, 0, 250, 630);
         theChatText.setBounds(0, 650, 250, 30);
 
-        theAnimationPanel.add(theChatArea);
+        theAnimationPanel.add(theScroll);
         theAnimationPanel.add(theChatText);
         
         theChatText.addActionListener(this);

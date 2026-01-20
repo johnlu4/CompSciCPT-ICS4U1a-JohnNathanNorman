@@ -32,7 +32,19 @@ public class PlayerClass {
     public boolean placeCard(int slotIndex, CardClass card){
         if (slotIndex < 0 || slotIndex >= placedSlots.length) return false;
         if (card == null) return false;
+        
+        // Squirrels (cost 0) cannot be placed on occupied slots
+        if (card.intCost == 0 && placedSlots[slotIndex] != null) {
+            System.out.println("Cannot place squirrel on occupied slot - no sacrifice allowed!");
+            return false;
+        }
+        
         if (placedSlots[slotIndex] != null){
+            // Check if card in slot is already dead (HP <= 0)
+            if (placedSlots[slotIndex].intHealth <= 0) {
+                System.out.println("Cannot sacrifice a dead card!");
+                return false;
+            }
             // check if enough blood w/ sacrifice to replace
             if (card.intCost > intBlood + 1){
                 return false;
@@ -150,6 +162,20 @@ public class PlayerClass {
     public void resetDrawPhase() {
         hasDrawnThisTurn = false;
         isReady = false;
+    }
+    
+    /**
+     * Get the current deck index (for previewing next card)
+     */
+    public int getDeckIndex() {
+        return deckIndex;
+    }
+    
+    /**
+     * Get the current squirrel deck index (for previewing next card)
+     */
+    public int getSquirrelIndex() {
+        return squirrelIndex;
     }
 
     // Constructor

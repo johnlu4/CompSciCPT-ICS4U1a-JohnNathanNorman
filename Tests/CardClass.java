@@ -11,6 +11,7 @@ public class CardClass {
     public int intAttack;
     public int intCost;
     public String strSigil = null;
+    public boolean blnRevealed = false; // Track if card has been revealed to opponent
 
     // Methods
 
@@ -32,5 +33,6 @@ public class CardClass {
         this.intAttack = arrStats[1];
         this.intCost = arrStats[2];
         this.strSigil = strSigil;
-    }    
+    }
 }
+

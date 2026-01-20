@@ -27,48 +27,76 @@ public class JAnimation extends JPanel implements MouseListener {
     private BufferedImage SquirrelCardBackImage = getImage("SquirrelCardBack.png");
     
     // Selected card tracking
-    private int selectedCardIndex = -1; // -1 means no card selected
+    private int intSelectedCardIndex = -1; // -1 means no card selected
+
+    // Animation state
+    private boolean blnIsAnimating = false;
+    private CardClass animatingCard = null;
+    private int intAnimStartX, intAnimStartY;
+    private int intAnimEndX, intAnimEndY;
+    private int intAnimatingToSlot = -1;
+    private float animProgress = 0.0f;
+    private float ANIM_SPEED = 0.08f; // Animation speed (0-1 per frame)
+    
+    // Attack animation state
+    private boolean blnIsAttackAnimating = false;
+    private CardClass attackingCard = null;
+    private int intAttackStartX, intAttackStartY;
+    private int intAttackTargetX, intAttackTargetY;
+    private int intAttackFromSlot = -1;
+    private boolean blnAttackFromBottom = true; // true = P1 (bottom), false = P2 (top)
+    private float attackProgress = 0.0f;
+    private float ATTACK_ANIM_SPEED = 0.15f; // Faster for attack animation
+    private boolean blnAttackReturning = false; // true when returning to original position
+    
+    // Draw animation state
+    private boolean blnIsDrawAnimating = false;
+    private CardClass drawingCard = null;
+    private int intDrawStartX, intDrawStartY;
+    private int intDrawEndX, intDrawEndY;
+    private float drawProgress = 0.0f;
+    private float DRAW_ANIM_SPEED = 0.12f; // Animation speed for drawing cards
 
     // Slot position constants
     // Bottom 4 card slots (Player 1)
-    private static final int BOTTOM_SLOT_Y = 465;
-    private static final int BOTTOM_SLOT_0_X = 466;
-    private static final int BOTTOM_SLOT_1_X = 610;
-    private static final int BOTTOM_SLOT_2_X = 740;
-    private static final int BOTTOM_SLOT_3_X = 880;
+    private int BOTTOM_SLOT_Y = 465;
+    private int BOTTOM_SLOT_0_X = 466;
+    private int BOTTOM_SLOT_1_X = 610;
+    private int BOTTOM_SLOT_2_X = 740;
+    private int BOTTOM_SLOT_3_X = 880;
 
     // Squirrel slot and Deck slot (top)
-    private static final int TOP_RIGHT_SQUIRREL_X = 1030;
-    private static final int TOP_RIGHT_DECK_X = 1185;
-    private static final int TOP_RIGHT_SLOT_Y = 30;
+    private int TOP_RIGHT_SQUIRREL_X = 1030;
+    private int TOP_RIGHT_DECK_X = 1185;
+    private int TOP_RIGHT_SLOT_Y = 30;
     
     // Squirrel slot and Deck slot (bottom)
-    private static final int BOTTOM_RIGHT_SQUIRREL_X = 1030;
-    private static final int BOTTOM_RIGHT_DECK_X = 1185;
-    private static final int BOTTOM_RIGHT_SLOT_Y = 575;
+    private int BOTTOM_RIGHT_SQUIRREL_X = 1030;
+    private int BOTTOM_RIGHT_DECK_X = 1185;
+    private int BOTTOM_RIGHT_SLOT_Y = 575;
 
     // Death Slot
-    private int DEATH_SLOT_X = 1175;
-    private int DEATH_SLOT_Y = 280;
+    private int intDeathSlotX = 1175;
+    private int intDeathSlotY = 280;
     
     // Slot dimensions
-    private static final int SLOT_WIDTH = 320;
-    private static final int SLOT_HEIGHT = 140;
-    private static final int CARD_WIDTH = 200;
-    private static final int CARD_HEIGHT = 280;
+    private int SLOT_WIDTH = 320;
+    private int SLOT_HEIGHT = 140;
+    private int CARD_WIDTH = 200;
+    private int CARD_HEIGHT = 280;
     
     // Bell position constants
-    private static final int BELL_X = 991;
-    private static final int BELL_Y = 298;
-    private static final int BELL_WIDTH = 110;
-    private static final int BELL_HEIGHT = 110;
+    private int BELL_X = 991;
+    private int BELL_Y = 298;
+    private int BELL_WIDTH = 110;
+    private int BELL_HEIGHT = 110;
     
     // Hand positioning constants
-    private static final int HAND_Y = 575;
-    private static final int HAND_CARD_WIDTH = 120;
-    private static final int HAND_CARD_HEIGHT = 168;
-    private static final int HAND_START_X = 425;
-    private static final int HAND_MAX_WIDTH = 500;
+    private int HAND_Y = 575;
+    private int HAND_CARD_WIDTH = 120;
+    private int HAND_CARD_HEIGHT = 168;
+    private int HAND_START_X = 425;
+    private int HAND_MAX_WIDTH = 500;
 
     // Utility Methods
     public BufferedImage getImage(String strImagePath){
@@ -77,11 +105,14 @@ public class JAnimation extends JPanel implements MouseListener {
         String resourcePath = null;
         
         // Try multiple locations
-        String[] pathsToTry = {
-            strImagePath.startsWith("/") ? strImagePath : "/" + strImagePath,
-            "/Tests/" + strImagePath,
-            "/cardsprites/" + strImagePath
-        };
+        String[] pathsToTry = new String[3];
+        if (strImagePath.startsWith("/")) {
+            pathsToTry[0] = strImagePath;
+        } else {
+            pathsToTry[0] = "/" + strImagePath;
+        }
+        pathsToTry[1] = "/Tests/" + strImagePath;
+        pathsToTry[2] = "/cardsprites/" + strImagePath;
         
         for (String path : pathsToTry) {
             is = getClass().getResourceAsStream(path);
@@ -111,11 +142,7 @@ public class JAnimation extends JPanel implements MouseListener {
         return getImage(cardsprites + fileName + ".png");
     }
 
-    /**
-     * Get the X coordinate for a given slot index
-     * @param slotIndex The slot (0-3)
-     * @return The X coordinate of the slot center
-     */
+    // Get the X coordinate for a given slot index
     private int getSlotX(int slotIndex) {
         switch (slotIndex) {
             case 0: return BOTTOM_SLOT_0_X;
@@ -126,13 +153,18 @@ public class JAnimation extends JPanel implements MouseListener {
         }
     }
 
-    /**
-     * Draw a card image at the specified slot position (bottom slots - Player 1)
-     * @param g Graphics context
-     * @param strCardName Name of the card
-     * @param slotIndex Slot index (0-3)
-     */
+    // Draw a card image at the specified slot position (bottom slots - Player 1)
     private void drawCardAtSlot(Graphics g, String strCardName, int slotIndex) {
+        // Skip drawing if this slot is being animated to
+        if (blnIsAnimating && slotIndex == intAnimatingToSlot) {
+            return;
+        }
+        
+        // Skip drawing if this card is attacking from this slot
+        if (blnIsAttackAnimating && slotIndex == intAttackFromSlot && blnAttackFromBottom) {
+            return;
+        }
+        
         BufferedImage cardImage = getCardImage(strCardName);
         if (cardImage == null) return;
         
@@ -165,32 +197,43 @@ public class JAnimation extends JPanel implements MouseListener {
         }
     }
 
-    /**
-     * Draw a card at top slot (Player 2) - shows card back during DrawingPhase
-     * @param g Graphics context
-     * @param card The card to draw
-     * @param slotIndex Slot index (0-3)
-     * @param showFaceUp Whether to show the card face-up or as a card back
-     */
-    private void drawCardAtTopSlot(Graphics g, CardClass card, int slotIndex, boolean showFaceUp) {
+    // Draw a card at top slot (Player 2) - shows card back during DrawingPhase
+    private void drawCardAtTopSlot(Graphics g, CardClass card, int slotIndex, boolean blnShowFaceUp) {
+        // Skip drawing if this card is attacking from this slot
+        if (blnIsAttackAnimating && slotIndex == intAttackFromSlot && !blnAttackFromBottom) {
+            return;
+        }
+        
         int slotX = getSlotX(slotIndex);
         int cardX = slotX - 60;
         int cardY = 150; // Top slots Y position (higher than before)
         
+        // Show card if it's been revealed before OR if we're supposed to show it face up
+        boolean shouldShowFaceUp = card.blnRevealed || blnShowFaceUp;
+        
+        // Mark card as revealed if we're showing it face up
+        if (blnShowFaceUp) {
+            card.blnRevealed = true;
+        }
+        
         BufferedImage imageToShow;
-        if (showFaceUp) {
+        if (shouldShowFaceUp) {
             imageToShow = getCardImage(card.strName);
         } else {
             // Show card back based on card cost (0 = squirrel)
-            imageToShow = (card.intCost == 0) ? SquirrelCardBackImage : RegularCardBackImage;
+            if (card.intCost == 0) {
+                imageToShow = SquirrelCardBackImage;
+            } else {
+                imageToShow = RegularCardBackImage;
+            }
         }
         
         if (imageToShow != null) {
             g.drawImage(imageToShow, cardX, cardY, 120, 150, this);
         }
         
-        // Draw damage and health indicators (only if face up)
-        if (showFaceUp && card != null) {
+        // Draw damage and health indicators (only if face up or revealed)
+        if (shouldShowFaceUp && card != null) {
             // Draw damage indicator (overlay)
             BufferedImage damageImg = getImage(cardsprites + "Damage_" + card.intAttack + ".png");
             if (damageImg != null) {
@@ -216,6 +259,50 @@ public class JAnimation extends JPanel implements MouseListener {
         
         if (bellImage != null) {
             paint.drawImage(bellImage, 0, 0, getWidth(), getHeight(), this);
+        }
+
+        // Update animation if active
+        if (blnIsAnimating) {
+            animProgress += ANIM_SPEED;
+            if (animProgress >= 1.0f) {
+                animProgress = 1.0f;
+                blnIsAnimating = false;
+                animatingCard = null;
+                intAnimatingToSlot = -1;
+            }
+        }
+        
+        // Update attack animation if active
+        if (blnIsAttackAnimating) {
+            attackProgress += ATTACK_ANIM_SPEED;
+            if (attackProgress >= 1.0f) {
+                attackProgress = 1.0f;
+                if (!blnAttackReturning) {
+                    // Reached target, now return
+                    blnAttackReturning = true;
+                    attackProgress = 0.0f;
+                } else {
+                    // Animation complete
+                    blnIsAttackAnimating = false;
+                    attackingCard = null;
+                    intAttackFromSlot = -1;
+                    blnAttackReturning = false;
+                    // Notify game that animation is complete
+                    if (game != null) {
+                        game.onAttackAnimationComplete();
+                    }
+                }
+            }
+        }
+        
+        // Update draw animation if active
+        if (blnIsDrawAnimating) {
+            drawProgress += DRAW_ANIM_SPEED;
+            if (drawProgress >= 1.0f) {
+                drawProgress = 1.0f;
+                blnIsDrawAnimating = false;
+                drawingCard = null;
+            }
         }
 
         // Draw current phase
@@ -249,7 +336,18 @@ public class JAnimation extends JPanel implements MouseListener {
                 drawHand(paint, p1);
             }
             if (p2 != null) {
-                boolean showFaceUp = !game.getCurrentPhase().equals("DrawingPhase");
+                // Always show cards face up during AttackPhase, hide during DrawingPhase
+                boolean showFaceUp = game.getCurrentPhase().equals("AttackPhase");
+                
+                // Reveal all placed cards during AttackPhase (including 0 attack cards)
+                if (showFaceUp) {
+                    for (int i = 0; i < 4; i++) {
+                        if (p2.placedSlots[i] != null) {
+                            p2.placedSlots[i].blnRevealed = true;
+                        }
+                    }
+                }
+                
                 for (int i = 0; i < 4; i++) {
                     if (p2.placedSlots[i] != null) {
                         drawCardAtTopSlot(paint, p2.placedSlots[i], i, showFaceUp);
@@ -264,6 +362,21 @@ public class JAnimation extends JPanel implements MouseListener {
         // Draw scale indicator
         drawScaleIndicator(paint);
 
+        // Draw animating card on top of everything
+        if (blnIsAnimating && animatingCard != null) {
+            drawAnimatingCard(paint);
+        }
+        
+        // Draw attacking card on top of everything
+        if (blnIsAttackAnimating && attackingCard != null) {
+            drawAttackingCard(paint);
+        }
+        
+        // Draw card being drawn on top of everything
+        if (blnIsDrawAnimating && drawingCard != null) {
+            drawDrawingCard(paint);
+        }
+
         // DEBUG: Draw clickable area rectangles
         // drawDebugRectangles(paint);
 
@@ -276,18 +389,44 @@ public class JAnimation extends JPanel implements MouseListener {
     private void drawCardBackImages(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         
-        // Draw bottom deck slot (Regular card back)
-        if (RegularCardBackImage != null) {
-            int cardX = BOTTOM_RIGHT_DECK_X - 60;
-            int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
-            g.drawImage(RegularCardBackImage, cardX, cardY, 120, 150, this);
+        if (game == null) return;
+        PlayerClass p1 = game.getP1();
+        if (p1 == null) return;
+        
+        // Draw bottom deck slot - show next card to draw
+        if (!blnIsDrawAnimating) {
+            String strNextCardName = getNextDeckCard(p1);
+            if (strNextCardName != null) {
+                BufferedImage nextCard = getCardImage(strNextCardName);
+                if (nextCard != null) {
+                    int cardX = BOTTOM_RIGHT_DECK_X - 60;
+                    int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+                    g.drawImage(nextCard, cardX, cardY, 120, 150, this);
+                }
+            } else if (RegularCardBackImage != null) {
+                // No more cards, show card back
+                int cardX = BOTTOM_RIGHT_DECK_X - 60;
+                int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+                g.drawImage(RegularCardBackImage, cardX, cardY, 120, 150, this);
+            }
         }
         
-        // Draw bottom squirrel slot (Squirrel card back)
-        if (SquirrelCardBackImage != null) {
-            int cardX = BOTTOM_RIGHT_SQUIRREL_X - 60;
-            int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
-            g.drawImage(SquirrelCardBackImage, cardX, cardY, 120, 150, this);
+        // Draw bottom squirrel slot - show squirrel card
+        if (!blnIsDrawAnimating) {
+            String strNextSquirrelName = getNextSquirrelCard(p1);
+            if (strNextSquirrelName != null) {
+                BufferedImage squirrelCard = getCardImage(strNextSquirrelName);
+                if (squirrelCard != null) {
+                    int cardX = BOTTOM_RIGHT_SQUIRREL_X - 60;
+                    int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+                    g.drawImage(squirrelCard, cardX, cardY, 120, 150, this);
+                }
+            } else if (SquirrelCardBackImage != null) {
+                // No more squirrels, show card back
+                int cardX = BOTTOM_RIGHT_SQUIRREL_X - 60;
+                int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+                g.drawImage(SquirrelCardBackImage, cardX, cardY, 120, 150, this);
+            }
         }
         
         // Draw top deck slot (Regular card back, flipped 180 degrees)
@@ -314,6 +453,238 @@ public class JAnimation extends JPanel implements MouseListener {
             g2d.rotate(Math.PI);  // Rotate 180 degrees
             g2d.drawImage(SquirrelCardBackImage, -60, -75, 120, 150, this);  // Draw centered
             g2d.setTransform(oldTransform);
+        }
+    }
+    
+    /**
+     * Get the name of the next card in the deck
+     */
+    private String getNextDeckCard(PlayerClass player) {
+        try {
+            int deckIndex = player.getDeckIndex();
+            if (deckIndex < player.strDeck.length && player.strDeck[deckIndex][0] != null) {
+                return player.strDeck[deckIndex][0];
+            }
+        } catch (Exception e) {
+            System.out.println("Error getting next deck card: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    /**
+     * Get the name of the next squirrel card
+     */
+    private String getNextSquirrelCard(PlayerClass player) {
+        try {
+            int squirrelIndex = player.getSquirrelIndex();
+            if (squirrelIndex < player.strSquirrelDeck.length && player.strSquirrelDeck[squirrelIndex][0] != null) {
+                return player.strSquirrelDeck[squirrelIndex][0];
+            }
+        } catch (Exception e) {
+            System.out.println("Error getting next squirrel card: " + e.getMessage());
+        }
+        return "Squirrel"; // Default fallback
+    }
+
+    /**
+     * Start animating a card from hand position to slot position
+     * @param card The card being placed
+     * @param handIndex The card's index in the hand
+     * @param slotIndex The target slot (0-3)
+     */
+    private void startCardAnimation(CardClass card, int handIndex, int slotIndex) {
+        if (card == null || game == null) return;
+        
+        PlayerClass p1 = game.getP1();
+        if (p1 == null) return;
+        
+        // Store the card and target slot
+        animatingCard = card;
+        intAnimatingToSlot = slotIndex;
+        
+        // Calculate start position (hand position)
+        int handSize = p1.hand.size(); // Current hand size (before removal)
+        int cardSpacing = handSize == 1 ? 0 : Math.min(HAND_CARD_WIDTH, HAND_MAX_WIDTH / handSize);
+        int startX = HAND_START_X + (HAND_MAX_WIDTH - (cardSpacing * (handSize - 1) + HAND_CARD_WIDTH)) / 2;
+        
+        intAnimStartX = startX + (handIndex * cardSpacing);
+        intAnimStartY = HAND_Y;
+        if (handIndex == intSelectedCardIndex) {
+            intAnimStartY -= 30; // Account for elevation
+        }
+        
+        // Calculate end position (slot position)
+        intAnimEndX = getSlotX(slotIndex) - 60;
+        intAnimEndY = BOTTOM_SLOT_Y - 75;
+        
+        // Start animation
+        animatingCard = card;
+        animProgress = 0.0f;
+        blnIsAnimating = true;
+    }
+
+    /**
+     * Start an attack animation from a card's slot to opponent's slot
+     * @param card The attacking card
+     * @param slotIndex The slot index (0-3)
+     * @param fromBottom true if attacking from bottom (P1), false if from top (P2)
+     */
+    public void startAttackAnimation(CardClass card, int slotIndex, boolean blnFromBottom) {
+        if (card == null) return;
+        
+        attackingCard = card;
+        intAttackFromSlot = slotIndex;
+        blnAttackFromBottom = blnFromBottom;
+        blnAttackReturning = false;
+        attackProgress = 0.0f;
+        
+        int slotX = getSlotX(slotIndex);
+        
+        if (blnFromBottom) {
+            // Bottom card attacking upward
+            intAttackStartX = slotX - 60;
+            intAttackStartY = BOTTOM_SLOT_Y - 75;
+            intAttackTargetX = slotX - 60;
+            intAttackTargetY = 150; // Top slot position
+        } else {
+            // Top card attacking downward
+            intAttackStartX = slotX - 60;
+            intAttackStartY = 150;
+            intAttackTargetX = slotX - 60;
+            intAttackTargetY = BOTTOM_SLOT_Y - 75; // Bottom slot position
+        }
+        
+        blnIsAttackAnimating = true;
+    }
+    
+    /**
+     * Start drawing animation from deck/squirrel slot to hand
+     * @param card The card being drawn
+     * @param fromDeck true if from deck, false if from squirrel slot
+     */
+    public void startDrawAnimation(CardClass card, boolean blnFromDeck) {
+        if (card == null) return;
+        
+        drawingCard = card;
+        drawProgress = 0.0f;
+        
+        // Start position (deck or squirrel slot)
+        if (blnFromDeck) {
+            intDrawStartX = BOTTOM_RIGHT_DECK_X - 60;
+            intDrawStartY = BOTTOM_RIGHT_SLOT_Y - 75;
+        } else {
+            intDrawStartX = BOTTOM_RIGHT_SQUIRREL_X - 60;
+            intDrawStartY = BOTTOM_RIGHT_SLOT_Y - 75;
+        }
+        
+        // End position (hand - rightmost position)
+        if (game != null) {
+            PlayerClass p1 = game.getP1();
+            if (p1 != null) {
+                int handSize = p1.hand.size();
+                int cardSpacing;
+                if (handSize == 1) {
+                    cardSpacing = 0;
+                } else {
+                    cardSpacing = Math.min(HAND_CARD_WIDTH, HAND_MAX_WIDTH / handSize);
+                }
+                int startX = HAND_START_X + (HAND_MAX_WIDTH - (cardSpacing * (handSize - 1) + HAND_CARD_WIDTH)) / 2;
+                
+                // Target the rightmost position (where the new card will be)
+                intDrawEndX = startX + ((handSize - 1) * cardSpacing);
+                intDrawEndY = HAND_Y;
+            }
+        }
+        
+        blnIsDrawAnimating = true;
+    }
+    
+    /**
+     * Draw the card currently being drawn to hand
+     * @param g Graphics context
+     */
+    private void drawDrawingCard(Graphics g) {
+        if (drawingCard == null) return;
+        
+        // Interpolate position using ease-out curve
+        float t = 1.0f - (1.0f - drawProgress) * (1.0f - drawProgress);
+        int currentX = (int)(intDrawStartX + (intDrawEndX - intDrawStartX) * t);
+        int currentY = (int)(intDrawStartY + (intDrawEndY - intDrawStartY) * t);
+        
+        // Draw the card
+        BufferedImage cardImage = getCardImage(drawingCard.strName);
+        if (cardImage != null) {
+            g.drawImage(cardImage, currentX, currentY, 120, 150, this);
+            
+            // Draw blue border for drawing card
+            g.setColor(Color.CYAN);
+            g.drawRect(currentX, currentY, 120, 150);
+        }
+    }
+    
+    /**
+     * Draw the card currently performing an attack
+     * @param g Graphics context
+     */
+    private void drawAttackingCard(Graphics g) {
+        if (attackingCard == null) return;
+        
+        int currentX, currentY;
+        
+        if (!blnAttackReturning) {
+            // Moving toward target
+            float t = 1.0f - (1.0f - attackProgress) * (1.0f - attackProgress);
+            currentX = (int)(intAttackStartX + (intAttackTargetX - intAttackStartX) * t);
+            currentY = (int)(intAttackStartY + (intAttackTargetY - intAttackStartY) * t);
+        } else {
+            // Returning to original position
+            float t = 1.0f - (1.0f - attackProgress) * (1.0f - attackProgress);
+            currentX = (int)(intAttackTargetX + (intAttackStartX - intAttackTargetX) * t);
+            currentY = (int)(intAttackTargetY + (intAttackStartY - intAttackTargetY) * t);
+        }
+        
+        // Draw the card
+        BufferedImage cardImage = getCardImage(attackingCard.strName);
+        if (cardImage != null) {
+            g.drawImage(cardImage, currentX, currentY, 120, 150, this);
+            
+            // Draw red border for attacking card
+            g.setColor(Color.RED);
+            g.drawRect(currentX, currentY, 120, 150);
+            
+            // Draw current stats on attacking card
+            BufferedImage damageImg = getImage(cardsprites + "Damage_" + attackingCard.intAttack + ".png");
+            if (damageImg != null) {
+                g.drawImage(damageImg, currentX, currentY, 120, 150, this);
+            }
+            
+            BufferedImage healthImg = getImage(cardsprites + "Health_" + attackingCard.intHealth + ".png");
+            if (healthImg != null) {
+                g.drawImage(healthImg, currentX, currentY, 120, 150, this);
+            }
+        }
+    }
+
+    /**
+     * Draw the card currently being animated
+     * @param g Graphics context
+     */
+    private void drawAnimatingCard(Graphics g) {
+        if (animatingCard == null) return;
+        
+        // Interpolate position using ease-out curve
+        float t = 1.0f - (1.0f - animProgress) * (1.0f - animProgress);
+        int currentX = (int)(intAnimStartX + (intAnimEndX - intAnimStartX) * t);
+        int currentY = (int)(intAnimStartY + (intAnimEndY - intAnimStartY) * t);
+        
+        // Draw the card
+        BufferedImage cardImage = getCardImage(animatingCard.strName);
+        if (cardImage != null) {
+            g.drawImage(cardImage, currentX, currentY, HAND_CARD_WIDTH, HAND_CARD_HEIGHT, this);
+            
+            // Draw green border for animated card
+            g.setColor(Color.GREEN);
+            g.drawRect(currentX, currentY, HAND_CARD_WIDTH, HAND_CARD_HEIGHT);
         }
     }
 
@@ -354,46 +725,6 @@ public class JAnimation extends JPanel implements MouseListener {
     }
 
     /**
-     * Draw debug rectangles for all clickable areas
-     * @param g Graphics context
-     */
-    private void drawDebugRectangles(Graphics g) {
-        // Set semi-transparent color for debug rectangles
-        g.setColor(new Color(255, 0, 0, 100)); // Red with alpha
-        
-        // Draw bottom 4 card slots (Player 1)
-        g.drawRect(BOTTOM_SLOT_0_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
-        g.drawRect(BOTTOM_SLOT_1_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
-        g.drawRect(BOTTOM_SLOT_2_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
-        g.drawRect(BOTTOM_SLOT_3_X - 60, BOTTOM_SLOT_Y - 75, 120, 150);
-        
-        // Label the slots
-        g.setColor(Color.YELLOW);
-        g.drawString("Slot 0", BOTTOM_SLOT_0_X - 20, BOTTOM_SLOT_Y);
-        g.drawString("Slot 1", BOTTOM_SLOT_1_X - 20, BOTTOM_SLOT_Y);
-        g.drawString("Slot 2", BOTTOM_SLOT_2_X - 20, BOTTOM_SLOT_Y);
-        g.drawString("Slot 3", BOTTOM_SLOT_3_X - 20, BOTTOM_SLOT_Y);
-        
-        // Draw bell area
-        g.setColor(new Color(0, 255, 0, 100)); // Green with alpha
-        g.drawRect(BELL_X, BELL_Y, BELL_WIDTH, BELL_HEIGHT);
-        g.setColor(Color.YELLOW);
-        g.drawString("Bell", BELL_X + 30, BELL_Y + 60);
-        
-        // Draw bottom squirrel slot
-        g.setColor(new Color(0, 0, 255, 100)); // Blue with alpha
-        g.drawRect(BOTTOM_RIGHT_SQUIRREL_X - 60, BOTTOM_RIGHT_SLOT_Y - 75, 120, 150);
-        g.setColor(Color.YELLOW);
-        g.drawString("Squirrel", BOTTOM_RIGHT_SQUIRREL_X - 25, BOTTOM_RIGHT_SLOT_Y);
-        
-        // Draw bottom deck slot
-        g.setColor(new Color(255, 255, 0, 100)); // Yellow with alpha
-        g.drawRect(BOTTOM_RIGHT_DECK_X - 60, BOTTOM_RIGHT_SLOT_Y - 75, 120, 150);
-        g.setColor(Color.WHITE);
-        g.drawString("Deck", BOTTOM_RIGHT_DECK_X - 15, BOTTOM_RIGHT_SLOT_Y);
-    }
-
-    /**
      * Draw the player's hand with dynamic card spacing
      * @param g Graphics context
      * @param player The player whose hand to draw
@@ -418,13 +749,19 @@ public class JAnimation extends JPanel implements MouseListener {
         
         for (int i = 0; i < handSize; i++) {
             CardClass card = player.hand.get(i);
+            
+            // Skip drawing if this card is currently being animated
+            if (blnIsAnimating && card == animatingCard) {
+                continue;
+            }
+            
             BufferedImage cardImage = getCardImage(card.strName);
             
             int cardX = startX + (i * cardSpacing);
             int cardY = HAND_Y;
             
             // Elevate selected card
-            if (i == selectedCardIndex) {
+            if (i == intSelectedCardIndex) {
                 cardY -= 30; // Move selected card up by 30 pixels
             }
             
@@ -432,7 +769,7 @@ public class JAnimation extends JPanel implements MouseListener {
                 g.drawImage(cardImage, cardX, cardY, HAND_CARD_WIDTH, HAND_CARD_HEIGHT, this);
                 
                 // Draw card border for visibility
-                if(i == selectedCardIndex){
+                if(i == intSelectedCardIndex){
                     g.setColor(Color.GREEN);
                 }else{
                     g.setColor(Color.ORANGE);
@@ -487,16 +824,26 @@ public class JAnimation extends JPanel implements MouseListener {
             PlayerClass p1 = game.getP1();
             if (p1 != null && !p1.hand.isEmpty()) {
                 int handSize = p1.hand.size();
-                int cardSpacing = handSize == 1 ? 0 : Math.min(HAND_CARD_WIDTH, HAND_MAX_WIDTH / handSize);
+                int cardSpacing;
+                if (handSize == 1) {
+                    cardSpacing = 0;
+                } else {
+                    cardSpacing = Math.min(HAND_CARD_WIDTH, HAND_MAX_WIDTH / handSize);
+                }
                 int startX = HAND_START_X + (HAND_MAX_WIDTH - (cardSpacing * (handSize - 1) + HAND_CARD_WIDTH)) / 2;
                 
                 for (int i = 0; i < handSize; i++) {
                     int cardX = startX + (i * cardSpacing);
-                    int cardY = (i == selectedCardIndex) ? (HAND_Y - 30) : HAND_Y;
+                    int cardY;
+                    if (i == intSelectedCardIndex) {
+                        cardY = HAND_Y - 30;
+                    } else {
+                        cardY = HAND_Y;
+                    }
                     
                     if (x >= cardX && x <= cardX + HAND_CARD_WIDTH &&
                         y >= cardY && y <= cardY + HAND_CARD_HEIGHT) {
-                        selectedCardIndex = i;
+                        intSelectedCardIndex = i;
                         System.out.println("Selected card " + i + ": " + p1.hand.get(i).strName);
                         repaint();
                         return;
@@ -505,62 +852,50 @@ public class JAnimation extends JPanel implements MouseListener {
             }
             
             // Check bottom 4 card slots (Player 1) - place card if one is selected
-            if (selectedCardIndex >= 0 && p1 != null && selectedCardIndex < p1.hand.size()) {
-                CardClass selectedCard = p1.hand.get(selectedCardIndex);
+            if (intSelectedCardIndex >= 0 && p1 != null && intSelectedCardIndex < p1.hand.size()) {
+                CardClass selectedCard = p1.hand.get(intSelectedCardIndex);
                 
-                // Slot 0
+                // Helper to check if placement would be valid and start animation if so
+                int targetSlot = -1;
+                
+                // Check which slot was clicked
                 if (x >= BOTTOM_SLOT_0_X - 60 && x <= BOTTOM_SLOT_0_X + 60 &&
                     y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
-                    System.out.println("Clicked on bottom slot 0 - Attempting to place card");
-                    if (p1.placeCard(0, selectedCard)) {
-                        // Send network message
-                        if (ssm != null) {
-                            ssm.sendText("PLACE_CARD:0:" + selectedCard.strName);
-                        }
-                        selectedCardIndex = -1; // Deselect after placing
-                        repaint();
-                    }
-                    return;
-                }
-                // Slot 1
-                if (x >= BOTTOM_SLOT_1_X - 60 && x <= BOTTOM_SLOT_1_X + 60 &&
+                    targetSlot = 0;
+                } else if (x >= BOTTOM_SLOT_1_X - 60 && x <= BOTTOM_SLOT_1_X + 60 &&
                     y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
-                    System.out.println("Clicked on bottom slot 1 - Attempting to place card");
-                    if (p1.placeCard(1, selectedCard)) {
-                        // Send network message
-                        if (ssm != null) {
-                            ssm.sendText("PLACE_CARD:1:" + selectedCard.strName);
-                        }
-                        selectedCardIndex = -1;
-                        repaint();
-                    }
-                    return;
-                }
-                // Slot 2
-                if (x >= BOTTOM_SLOT_2_X - 60 && x <= BOTTOM_SLOT_2_X + 60 &&
+                    targetSlot = 1;
+                } else if (x >= BOTTOM_SLOT_2_X - 60 && x <= BOTTOM_SLOT_2_X + 60 &&
                     y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
-                    System.out.println("Clicked on bottom slot 2 - Attempting to place card");
-                    if (p1.placeCard(2, selectedCard)) {
-                        // Send network message
-                        if (ssm != null) {
-                            ssm.sendText("PLACE_CARD:2:" + selectedCard.strName);
-                        }
-                        selectedCardIndex = -1;
-                        repaint();
-                    }
-                    return;
-                }
-                // Slot 3
-                if (x >= BOTTOM_SLOT_3_X - 60 && x <= BOTTOM_SLOT_3_X + 60 &&
+                    targetSlot = 2;
+                } else if (x >= BOTTOM_SLOT_3_X - 60 && x <= BOTTOM_SLOT_3_X + 60 &&
                     y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
-                    System.out.println("Clicked on bottom slot 3 - Attempting to place card");
-                    if (p1.placeCard(3, selectedCard)) {
-                        // Send network message
+                    targetSlot = 3;
+                }
+                
+                // If a slot was clicked, try to place the card
+                if (targetSlot >= 0) {
+                    System.out.println("Clicked on bottom slot " + targetSlot + " - Attempting to place card");
+                    
+                    // Start animation BEFORE placing card (while it's still in hand)
+                    startCardAnimation(selectedCard, intSelectedCardIndex, targetSlot);
+                    
+                    // Now place the card (this removes it from hand)
+                    if (p1.placeCard(targetSlot, selectedCard)) {
+                        // Send network message with full card stats
+                        // Format: PLACE_CARD:slotIndex:cardName:cost:hp:attack:sigil
                         if (ssm != null) {
-                            ssm.sendText("PLACE_CARD:3:" + selectedCard.strName);
+                            ssm.sendText("PLACE_CARD:" + targetSlot + ":" + selectedCard.strName + ":" + 
+                                        selectedCard.intCost + ":" + selectedCard.intHealth + ":" + 
+                                        selectedCard.intAttack + ":" + selectedCard.strSigil);
                         }
-                        selectedCardIndex = -1;
+                        intSelectedCardIndex = -1; // Deselect after placing
                         repaint();
+                    } else {
+                        // If placement failed, cancel animation
+                        blnIsAnimating = false;
+                        animatingCard = null;
+                        intAnimatingToSlot = -1;
                     }
                     return;
                 }
@@ -570,7 +905,38 @@ public class JAnimation extends JPanel implements MouseListener {
             if (x >= BOTTOM_RIGHT_SQUIRREL_X - 60 && x <= BOTTOM_RIGHT_SQUIRREL_X + 60 &&
                 y >= BOTTOM_RIGHT_SLOT_Y - 75 && y <= BOTTOM_RIGHT_SLOT_Y + 75) {
                 System.out.println("Clicked on bottom squirrel slot at (" + x + ", " + y + ")");
-                // game.placeSquirrel(1); // Player 1
+                
+                // Draw a squirrel card for Player 1
+                if (game.getCurrentPhase().equals("DrawingPhase")) {
+                    // Can't draw during initialization phase
+                    if (game.isInitializationPhase) {
+                        System.out.println("Cannot draw cards during the first Drawing Phase!");
+                        return;
+                    }
+                    // Use game method to properly track drawing
+                    p1 = game.getP1();
+                    if (p1 != null && !p1.hasDrawnThisTurn) {
+                        // Get the card we'll draw for animation
+                        int squirrelIdx = p1.getSquirrelIndex();
+                        if (squirrelIdx < p1.strSquirrelDeck.length && p1.strSquirrelDeck[squirrelIdx][0] != null) {
+                            // Create the card for animation
+                            String name = p1.strSquirrelDeck[squirrelIdx][0];
+                            int cost = Integer.parseInt(p1.strSquirrelDeck[squirrelIdx][1]);
+                            int hp = Integer.parseInt(p1.strSquirrelDeck[squirrelIdx][2]);
+                            int attack = Integer.parseInt(p1.strSquirrelDeck[squirrelIdx][3]);
+                            String sigil = p1.strSquirrelDeck[squirrelIdx][4];
+                            CardClass cardToDraw = new CardClass(name, null, new int[]{hp, attack, cost}, sigil);
+                            
+                            // Now draw through game method (which sets hasDrawnThisTurn)
+                            if (game.playerDrawSquirrel(1)) {
+                                startDrawAnimation(cardToDraw, false); // false = squirrel slot
+                                repaint();
+                            }
+                        }
+                    }
+                } else {
+                    System.out.println("Can only draw during Drawing Phase");
+                }
                 return;
             }
             
@@ -578,7 +944,38 @@ public class JAnimation extends JPanel implements MouseListener {
             if (x >= BOTTOM_RIGHT_DECK_X - 60 && x <= BOTTOM_RIGHT_DECK_X + 60 &&
                 y >= BOTTOM_RIGHT_SLOT_Y - 75 && y <= BOTTOM_RIGHT_SLOT_Y + 75) {
                 System.out.println("Clicked on bottom deck slot at (" + x + ", " + y + ")");
-                // Draw card functionality
+                
+                // Draw a card from deck for Player 1
+                if (game.getCurrentPhase().equals("DrawingPhase")) {
+                    // Can't draw during initialization phase
+                    if (game.isInitializationPhase) {
+                        System.out.println("Cannot draw cards during the first Drawing Phase!");
+                        return;
+                    }
+                    p1 = game.getP1();
+                    if (p1 != null && !p1.hasDrawnThisTurn) {
+                        // Get the card we'll draw for animation
+                        int deckIdx = p1.getDeckIndex();
+                        if (deckIdx < p1.strDeck.length && p1.strDeck[deckIdx][0] != null) {
+                            // Create the card for animation
+                            String name = p1.strDeck[deckIdx][0];
+                            int cost = Integer.parseInt(p1.strDeck[deckIdx][1]);
+                            int hp = Integer.parseInt(p1.strDeck[deckIdx][2]);
+                            int attack = Integer.parseInt(p1.strDeck[deckIdx][3]);
+                            String sigil = p1.strDeck[deckIdx][4];
+                            BufferedImage cardImage = getCardImage(name);
+                            CardClass cardToDraw = new CardClass(name, cardImage, new int[]{hp, attack, cost}, sigil);
+                            
+                            // Now draw through game method (which sets hasDrawnThisTurn)
+                            if (game.playerDrawCard(1)) {
+                                startDrawAnimation(cardToDraw, true); // true = deck slot
+                                repaint();
+                            }
+                        }
+                    }
+                } else {
+                    System.out.println("Can only draw during Drawing Phase");
+                }
                 return;
             }
             
