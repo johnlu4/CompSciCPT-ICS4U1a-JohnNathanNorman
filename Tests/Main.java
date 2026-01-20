@@ -90,7 +90,7 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         }
         return Image;
     }
-
+    // main gameplay
     public void StartGame(){
         PlayerClass p1 = new PlayerClass(strP1Name);
         PlayerClass p2 = new PlayerClass(strP2Name);

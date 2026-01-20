@@ -10,6 +10,7 @@ import java.awt.event.ActionEvent;
 import java.io.*;
 
 public class InscryptionDeck{
+    //Variables
     public static void main(String[] args){
         String strP1Deck[][] = new String[20][5];
         String strP2Deck[][] = new String[20][5];
@@ -37,6 +38,7 @@ public class InscryptionDeck{
         BufferedReader thefile = null;
         strP1Deck[19][4] = ("Blank");
         strP2Deck[19][4] = ("Blank");
+        //Open the blood cost cards
         try{
 		    thefile = new BufferedReader(new FileReader("bloodcardlist.csv"));	
 		}catch(FileNotFoundException e){
@@ -50,7 +52,7 @@ public class InscryptionDeck{
             strLine = null;
         }
 
-        // read the card info into a 2-dimensional array
+        // read the card info into a 2-dimensional array for the full card list
         while(strLine != null){
             String strArray[];
             int intCol;
@@ -73,7 +75,7 @@ public class InscryptionDeck{
                 strLine = null;
             }    
         }
-
+        //Shuffle the cards
         for(intRow2 = 0; intRow2 < 56; intRow2++){
             for(intRow = 0; intRow <56-1-intRow2;intRow++){
                 try{
@@ -113,6 +115,8 @@ public class InscryptionDeck{
             //System.out.print(strBigDeck[intCount][4] + ", ");
             //System.out.println(strBigDeck[intCount][5]);
         //}
+
+        // making p1 and p2 decks
         while(blnP1DeckFill != true){
             try{
                 if(strP1Deck[19][4].equals("Blank") || strP2Deck[19][4].equals("Blank")){
@@ -166,6 +170,7 @@ public class InscryptionDeck{
              thefile.close();
         }catch(IOException e){
         }
+        //Making the squirrel deck
         BufferedReader rodent = null;
         try{
 		    rodent = new BufferedReader(new FileReader("Squireldeck.csv"));	
@@ -199,6 +204,7 @@ public class InscryptionDeck{
              rodent.close();
         }catch(IOException e){
         }
+        //Make the evolution deck
         BufferedReader evo = null;
         try{
 		    evo = new BufferedReader(new FileReader("extracards.csv"));	
