@@ -11,6 +11,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 
 
 public class JAnimation extends JPanel implements MouseListener {
@@ -28,6 +29,9 @@ public class JAnimation extends JPanel implements MouseListener {
     
     // Selected card tracking
     private int intSelectedCardIndex = -1; // -1 means no card selected
+    
+    // Sacrifice selection tracking
+    private ArrayList<Integer> selectedSacrificeSlots = new ArrayList<>(); // Slots marked for sacrifice
 
     // Animation state
     private boolean blnIsAnimating = false;
@@ -173,6 +177,16 @@ public class JAnimation extends JPanel implements MouseListener {
         // Card size: 120x150 (same as debug rectangles)
         int cardX = slotX - 60; // Center horizontally
         int cardY = BOTTOM_SLOT_Y - 75; // Center vertically
+        
+        // Draw red highlight if this card is selected for sacrifice
+        if (selectedSacrificeSlots.contains(slotIndex)) {
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setColor(new Color(255, 0, 0, 100)); // Semi-transparent red
+            g2d.fillRect(cardX, cardY, 120, 150);
+            g2d.setColor(Color.RED);
+            g2d.drawRect(cardX, cardY, 120, 150);
+            g2d.drawRect(cardX + 1, cardY + 1, 118, 148); // Thicker border
+        }
         
         g.drawImage(cardImage, cardX, cardY, 120, 150, this);
         
@@ -382,116 +396,48 @@ public class JAnimation extends JPanel implements MouseListener {
 
     }
 
-    /**
-     * Draw card back images for deck and squirrel slots
-     * @param g Graphics context
-     */
+    // Draw card back images for deck and squirrel slots
     private void drawCardBackImages(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         
-        if (game == null) return;
-        PlayerClass p1 = game.getP1();
-        if (p1 == null) return;
-        
-        // Draw bottom deck slot - show next card to draw
-        if (!blnIsDrawAnimating) {
-            String strNextCardName = getNextDeckCard(p1);
-            if (strNextCardName != null) {
-                BufferedImage nextCard = getCardImage(strNextCardName);
-                if (nextCard != null) {
-                    int cardX = BOTTOM_RIGHT_DECK_X - 60;
-                    int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
-                    g.drawImage(nextCard, cardX, cardY, 120, 150, this);
-                }
-            } else if (RegularCardBackImage != null) {
-                // No more cards, show card back
-                int cardX = BOTTOM_RIGHT_DECK_X - 60;
-                int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
-                g.drawImage(RegularCardBackImage, cardX, cardY, 120, 150, this);
-            }
+        // Draw bottom deck slot - always show card back
+        if (!blnIsDrawAnimating && RegularCardBackImage != null) {
+            int cardX = BOTTOM_RIGHT_DECK_X - 60;
+            int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+            g.drawImage(RegularCardBackImage, cardX, cardY, 120, 150, this);
         }
         
-        // Draw bottom squirrel slot - show squirrel card
-        if (!blnIsDrawAnimating) {
-            String strNextSquirrelName = getNextSquirrelCard(p1);
-            if (strNextSquirrelName != null) {
-                BufferedImage squirrelCard = getCardImage(strNextSquirrelName);
-                if (squirrelCard != null) {
-                    int cardX = BOTTOM_RIGHT_SQUIRREL_X - 60;
-                    int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
-                    g.drawImage(squirrelCard, cardX, cardY, 120, 150, this);
-                }
-            } else if (SquirrelCardBackImage != null) {
-                // No more squirrels, show card back
-                int cardX = BOTTOM_RIGHT_SQUIRREL_X - 60;
-                int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
-                g.drawImage(SquirrelCardBackImage, cardX, cardY, 120, 150, this);
-            }
+        // Draw bottom squirrel slot - always show card back
+        if (!blnIsDrawAnimating && SquirrelCardBackImage != null) {
+            int cardX = BOTTOM_RIGHT_SQUIRREL_X - 60;
+            int cardY = BOTTOM_RIGHT_SLOT_Y - 75;
+            g.drawImage(SquirrelCardBackImage, cardX, cardY, 120, 150, this);
         }
         
         // Draw top deck slot (Regular card back, flipped 180 degrees)
         if (RegularCardBackImage != null) {
             AffineTransform oldTransform = g2d.getTransform();
-            // Translate to top-left corner of where we want the card
-            // Then translate to center, rotate 180, and offset back
             int cardX = TOP_RIGHT_DECK_X - 60;
             int cardY = TOP_RIGHT_SLOT_Y;
-            g2d.translate(cardX + 60, cardY + 75);  // Move to center of card position
-            g2d.rotate(Math.PI);  // Rotate 180 degrees
-            g2d.drawImage(RegularCardBackImage, -60, -75, 120, 150, this);  // Draw centered
+            g2d.translate(cardX + 60, cardY + 75);
+            g2d.rotate(Math.PI);
+            g2d.drawImage(RegularCardBackImage, -60, -75, 120, 150, this);
             g2d.setTransform(oldTransform);
         }
         
         // Draw top squirrel slot (Squirrel card back, flipped 180 degrees)
         if (SquirrelCardBackImage != null) {
             AffineTransform oldTransform = g2d.getTransform();
-            // Translate to top-left corner of where we want the card
-            // Then translate to center, rotate 180, and offset back
             int cardX = TOP_RIGHT_SQUIRREL_X - 60;
             int cardY = TOP_RIGHT_SLOT_Y;
-            g2d.translate(cardX + 60, cardY + 75);  // Move to center of card position
-            g2d.rotate(Math.PI);  // Rotate 180 degrees
-            g2d.drawImage(SquirrelCardBackImage, -60, -75, 120, 150, this);  // Draw centered
+            g2d.translate(cardX + 60, cardY + 75);
+            g2d.rotate(Math.PI);
+            g2d.drawImage(SquirrelCardBackImage, -60, -75, 120, 150, this);
             g2d.setTransform(oldTransform);
         }
     }
-    
-    /**
-     * Get the name of the next card in the deck
-     */
-    private String getNextDeckCard(PlayerClass player) {
-        try {
-            int deckIndex = player.getDeckIndex();
-            if (deckIndex < player.strDeck.length && player.strDeck[deckIndex][0] != null) {
-                return player.strDeck[deckIndex][0];
-            }
-        } catch (Exception e) {
-            System.out.println("Error getting next deck card: " + e.getMessage());
-        }
-        return null;
-    }
-    
-    /**
-     * Get the name of the next squirrel card
-     */
-    private String getNextSquirrelCard(PlayerClass player) {
-        try {
-            int squirrelIndex = player.getSquirrelIndex();
-            if (squirrelIndex < player.strSquirrelDeck.length && player.strSquirrelDeck[squirrelIndex][0] != null) {
-                return player.strSquirrelDeck[squirrelIndex][0];
-            }
-        } catch (Exception e) {
-            System.out.println("Error getting next squirrel card: " + e.getMessage());
-        }
-        return "Squirrel"; // Default fallback
-    }
 
-    /**
-     * Start animating a card from hand position to slot position
-     * @param card The card being placed
-     * @param handIndex The card's index in the hand
-     * @param slotIndex The target slot (0-3)
-     */
+    // Start animating a card from hand position to slot position
     private void startCardAnimation(CardClass card, int handIndex, int slotIndex) {
         if (card == null || game == null) return;
         
@@ -523,12 +469,7 @@ public class JAnimation extends JPanel implements MouseListener {
         blnIsAnimating = true;
     }
 
-    /**
-     * Start an attack animation from a card's slot to opponent's slot
-     * @param card The attacking card
-     * @param slotIndex The slot index (0-3)
-     * @param fromBottom true if attacking from bottom (P1), false if from top (P2)
-     */
+    // Start an attack animation from a card's slot to opponent's slot
     public void startAttackAnimation(CardClass card, int slotIndex, boolean blnFromBottom) {
         if (card == null) return;
         
@@ -557,11 +498,7 @@ public class JAnimation extends JPanel implements MouseListener {
         blnIsAttackAnimating = true;
     }
     
-    /**
-     * Start drawing animation from deck/squirrel slot to hand
-     * @param card The card being drawn
-     * @param fromDeck true if from deck, false if from squirrel slot
-     */
+    // Start drawing animation from deck/squirrel slot to hand
     public void startDrawAnimation(CardClass card, boolean blnFromDeck) {
         if (card == null) return;
         
@@ -599,10 +536,7 @@ public class JAnimation extends JPanel implements MouseListener {
         blnIsDrawAnimating = true;
     }
     
-    /**
-     * Draw the card currently being drawn to hand
-     * @param g Graphics context
-     */
+    // Draw the card currently being drawn to hand
     private void drawDrawingCard(Graphics g) {
         if (drawingCard == null) return;
         
@@ -622,10 +556,7 @@ public class JAnimation extends JPanel implements MouseListener {
         }
     }
     
-    /**
-     * Draw the card currently performing an attack
-     * @param g Graphics context
-     */
+    // Draw the card currently performing an attack
     private void drawAttackingCard(Graphics g) {
         if (attackingCard == null) return;
         
@@ -665,10 +596,7 @@ public class JAnimation extends JPanel implements MouseListener {
         }
     }
 
-    /**
-     * Draw the card currently being animated
-     * @param g Graphics context
-     */
+    // Draw the card currently being animated
     private void drawAnimatingCard(Graphics g) {
         if (animatingCard == null) return;
         
@@ -688,10 +616,7 @@ public class JAnimation extends JPanel implements MouseListener {
         }
     }
 
-    /**
-     * Draw the scale indicator showing balance between players
-     * @param g Graphics context
-     */
+    // Draw the scale indicator showing balance between players
     private void drawScaleIndicator(Graphics g) {
         if (game == null) return;
         
@@ -724,11 +649,7 @@ public class JAnimation extends JPanel implements MouseListener {
         g.fillOval(scaleX - 8, dotY - 8, 16, 16);
     }
 
-    /**
-     * Draw the player's hand with dynamic card spacing
-     * @param g Graphics context
-     * @param player The player whose hand to draw
-     */
+    // Draw the player's hand with dynamic card spacing
     private void drawHand(Graphics g, PlayerClass player) {
         if (player.hand.isEmpty()) return;
         
@@ -843,10 +764,96 @@ public class JAnimation extends JPanel implements MouseListener {
                     
                     if (x >= cardX && x <= cardX + HAND_CARD_WIDTH &&
                         y >= cardY && y <= cardY + HAND_CARD_HEIGHT) {
+                        // Clear sacrifice selection when selecting a different hand card
+                        if (intSelectedCardIndex != i) {
+                            selectedSacrificeSlots.clear();
+                        }
                         intSelectedCardIndex = i;
                         System.out.println("Selected card " + i + ": " + p1.hand.get(i).strName);
                         repaint();
                         return;
+                    }
+                }
+            }
+            
+            // Check if clicking on placed cards for sacrifice selection
+            // This allows players to select cards to sacrifice when they have a card requiring 2+ blood selected
+            if (intSelectedCardIndex >= 0 && p1 != null && intSelectedCardIndex < p1.hand.size()) {
+                CardClass selectedCard = p1.hand.get(intSelectedCardIndex);
+                
+                // Only allow sacrifice selection if card costs 2+ blood
+                if (selectedCard.intCost >= 2) {
+                    int clickedSlot = -1;
+                    
+                    // Check which slot was clicked
+                    if (x >= BOTTOM_SLOT_0_X - 60 && x <= BOTTOM_SLOT_0_X + 60 &&
+                        y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                        clickedSlot = 0;
+                    } else if (x >= BOTTOM_SLOT_1_X - 60 && x <= BOTTOM_SLOT_1_X + 60 &&
+                        y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                        clickedSlot = 1;
+                    } else if (x >= BOTTOM_SLOT_2_X - 60 && x <= BOTTOM_SLOT_2_X + 60 &&
+                        y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                        clickedSlot = 2;
+                    } else if (x >= BOTTOM_SLOT_3_X - 60 && x <= BOTTOM_SLOT_3_X + 60 &&
+                        y >= BOTTOM_SLOT_Y - 75 && y <= BOTTOM_SLOT_Y + 75) {
+                        clickedSlot = 3;
+                    }
+                    
+                    // If a placed card was clicked, toggle sacrifice selection
+                    if (clickedSlot >= 0 && p1.placedSlots[clickedSlot] != null) {
+                        CardClass cardInSlot = p1.placedSlots[clickedSlot];
+                        
+                        // Don't allow sacrificing dead cards
+                        if (cardInSlot.intHealth > 0) {
+                            if (selectedSacrificeSlots.contains(clickedSlot)) {
+                                // Deselect this sacrifice
+                                selectedSacrificeSlots.remove(Integer.valueOf(clickedSlot));
+                                System.out.println("Deselected slot " + clickedSlot + " for sacrifice");
+                                repaint();
+                                return;
+                            } else {
+                                // Add to sacrifice selection
+                                selectedSacrificeSlots.add(clickedSlot);
+                                int totalBlood = p1.intBlood + selectedSacrificeSlots.size();
+                                System.out.println("Selected slot " + clickedSlot + " for sacrifice. Total blood: " + totalBlood + "/" + selectedCard.intCost);
+                                
+                                // If we now have enough blood, automatically place the card on this slot
+                                if (totalBlood >= selectedCard.intCost) {
+                                    System.out.println("Sufficient blood reached! Placing card on slot " + clickedSlot);
+                                    
+                                    // Start animation BEFORE placing card (while it's still in hand)
+                                    startCardAnimation(selectedCard, intSelectedCardIndex, clickedSlot);
+                                    
+                                    // Place the card with sacrifices
+                                    if (p1.placeCard(clickedSlot, selectedCard, selectedSacrificeSlots)) {
+                                        // Send network message with full card stats and sacrifice slots
+                                        if (ssm != null) {
+                                            String sigilName = selectedCard.getSigil() != null ? selectedCard.getSigil().getName() : "N/A";
+                                            // Convert sacrifice slots to comma-separated string
+                                            String sacrificeList = "";
+                                            for (int i = 0; i < selectedSacrificeSlots.size(); i++) {
+                                                sacrificeList += selectedSacrificeSlots.get(i);
+                                                if (i < selectedSacrificeSlots.size() - 1) sacrificeList += ",";
+                                            }
+                                            if (sacrificeList.isEmpty()) sacrificeList = "none";
+                                            ssm.sendText("PLACE_CARD:" + clickedSlot + ":" + selectedCard.strName + ":" + 
+                                                        selectedCard.intCost + ":" + selectedCard.intHealth + ":" + 
+                                                        selectedCard.intAttack + ":" + sigilName + ":" + sacrificeList);
+                                        }
+                                        intSelectedCardIndex = -1; // Deselect after placing
+                                        selectedSacrificeSlots.clear(); // Clear sacrifice selection after placing
+                                    } else {
+                                        // If placement failed, cancel animation
+                                        blnIsAnimating = false;
+                                        animatingCard = null;
+                                        intAnimatingToSlot = -1;
+                                    }
+                                }
+                                repaint();
+                                return;
+                            }
+                        }
                     }
                 }
             }
@@ -880,16 +887,35 @@ public class JAnimation extends JPanel implements MouseListener {
                     // Start animation BEFORE placing card (while it's still in hand)
                     startCardAnimation(selectedCard, intSelectedCardIndex, targetSlot);
                     
+                    boolean placementSuccess = false;
+                    
+                    // Use new placeCard with sacrifices if we have any selected
+                    if (!selectedSacrificeSlots.isEmpty() && selectedCard.intCost >= 2) {
+                        placementSuccess = p1.placeCard(targetSlot, selectedCard, selectedSacrificeSlots);
+                    } else {
+                        // Use old placeCard for single-slot or no sacrifice
+                        placementSuccess = p1.placeCard(targetSlot, selectedCard);
+                    }
+                    
                     // Now place the card (this removes it from hand)
-                    if (p1.placeCard(targetSlot, selectedCard)) {
-                        // Send network message with full card stats
-                        // Format: PLACE_CARD:slotIndex:cardName:cost:hp:attack:sigil
+                    if (placementSuccess) {
+                        // Send network message with full card stats and sacrifice slots
+                        // Format: PLACE_CARD:slotIndex:cardName:cost:hp:attack:sigil:sacrificeSlots
                         if (ssm != null) {
+                            String sigilName = selectedCard.getSigil() != null ? selectedCard.getSigil().getName() : "N/A";
+                            // Convert sacrifice slots to comma-separated string
+                            String sacrificeList = "";
+                            for (int i = 0; i < selectedSacrificeSlots.size(); i++) {
+                                sacrificeList += selectedSacrificeSlots.get(i);
+                                if (i < selectedSacrificeSlots.size() - 1) sacrificeList += ",";
+                            }
+                            if (sacrificeList.isEmpty()) sacrificeList = "none";
                             ssm.sendText("PLACE_CARD:" + targetSlot + ":" + selectedCard.strName + ":" + 
                                         selectedCard.intCost + ":" + selectedCard.intHealth + ":" + 
-                                        selectedCard.intAttack + ":" + selectedCard.strSigil);
+                                        selectedCard.intAttack + ":" + sigilName + ":" + sacrificeList);
                         }
                         intSelectedCardIndex = -1; // Deselect after placing
+                        selectedSacrificeSlots.clear(); // Clear sacrifice selection after placing
                         repaint();
                     } else {
                         // If placement failed, cancel animation

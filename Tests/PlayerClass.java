@@ -60,6 +60,73 @@ public class PlayerClass {
         hand.remove(card); // Remove from hand when placed
         return true;
     }
+    
+    // Place a card with multiple sacrifices (for cards requiring 2+ blood)
+    public boolean placeCard(int slotIndex, CardClass card, ArrayList<Integer> sacrificeSlots){
+        if (slotIndex < 0 || slotIndex >= placedSlots.length) return false;
+        if (card == null) return false;
+        if (sacrificeSlots == null) sacrificeSlots = new ArrayList<>();
+        
+        // Squirrels (cost 0) cannot be sacrificed with
+        if (card.intCost == 0) {
+            System.out.println("Squirrels don't cost blood!");
+            return false;
+        }
+        
+        // Validate all sacrifice slots
+        for (int sacrificeSlot : sacrificeSlots) {
+            if (sacrificeSlot < 0 || sacrificeSlot >= placedSlots.length) {
+                System.out.println("Invalid sacrifice slot: " + sacrificeSlot);
+                return false;
+            }
+            if (placedSlots[sacrificeSlot] == null) {
+                System.out.println("Cannot sacrifice empty slot: " + sacrificeSlot);
+                return false;
+            }
+            if (placedSlots[sacrificeSlot].intHealth <= 0) {
+                System.out.println("Cannot sacrifice dead card in slot: " + sacrificeSlot);
+                return false;
+            }
+        }
+        
+        // Calculate total blood available (current blood + sacrifices)
+        int totalBlood = intBlood + sacrificeSlots.size();
+        
+        // If placing on an occupied slot that's not being sacrificed, add 1 more blood
+        if (placedSlots[slotIndex] != null && !sacrificeSlots.contains(slotIndex)) {
+            if (placedSlots[slotIndex].intHealth > 0) {
+                totalBlood += 1;
+            }
+        }
+        
+        // Check if we have enough blood
+        if (card.intCost > totalBlood) {
+            System.out.println("Not enough blood! Need: " + card.intCost + ", Have: " + totalBlood);
+            return false;
+        }
+        
+        // Perform sacrifices
+        for (int sacrificeSlot : sacrificeSlots) {
+            System.out.println("Sacrificing card in slot " + sacrificeSlot + ": " + placedSlots[sacrificeSlot].strName);
+            placedSlots[sacrificeSlot] = null;
+        }
+        
+        // If placing on an occupied slot that wasn't sacrificed, clear it
+        if (placedSlots[slotIndex] != null && !sacrificeSlots.contains(slotIndex)) {
+            System.out.println("Replacing card in slot " + slotIndex);
+            placedSlots[slotIndex] = null;
+        }
+        
+        // Reset blood to 0 after payment
+        intBlood = 0;
+        
+        // Place the card
+        placedSlots[slotIndex] = card;
+        hand.remove(card); // Remove from hand when placed
+        
+        System.out.println("Successfully placed " + card.strName + " in slot " + slotIndex);
+        return true;
+    }
 
     /**
      * Place a squirrel card in a slot (free - no blood cost)

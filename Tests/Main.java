@@ -192,7 +192,10 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             } else if (strLine.startsWith("PLAYER_NAME: ")) {
                 strP2Name = strLine.substring(13);
                 System.out.println("Player 2 Name: " + strP2Name);
-            } else if (game != null && game.blnStarted && strLine.startsWith("CHAT: ")) {
+            } 
+
+            // In-game events
+            if (game != null && game.blnStarted && strLine.startsWith("CHAT: ")) {
                 String chatMessage = strLine.substring(6);
                 theChatArea.append(strP2Name + ": " + chatMessage + "\n");
             } else if (game != null && game.blnStarted && strLine.equals("SYSTEM: ")) {
@@ -316,9 +319,9 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 theAnimationPanel.repaint();
             } else if (game != null && game.blnStarted && strLine.startsWith("PLACE_CARD:")) {
                 // Handle card placement from remote player
-                // Format: PLACE_CARD:slotIndex:cardName:cost:hp:attack:sigil
-                String[] parts = strLine.split(":", 7);
-                if (parts.length == 7) {
+                // Format: PLACE_CARD:slotIndex:cardName:cost:hp:attack:sigil:sacrificeSlots
+                String[] parts = strLine.split(":", 8);
+                if (parts.length >= 7) {
                     try {
                         int slotIndex = Integer.parseInt(parts[1]);
                         String cardName = parts[2];
@@ -326,8 +329,25 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                         int hp = Integer.parseInt(parts[4]);
                         int attack = Integer.parseInt(parts[5]);
                         String sigil = parts[6];
+                        String sacrificeSlots = parts.length == 8 ? parts[7] : "none";
                         
                         PlayerClass p2 = game.getP2();
+                        
+                        // Handle sacrifice slots first
+                        if (!sacrificeSlots.equals("none") && !sacrificeSlots.isEmpty()) {
+                            String[] sacrificeIndices = sacrificeSlots.split(",");
+                            for (String sacrificeSlotStr : sacrificeIndices) {
+                                try {
+                                    int sacrificeSlot = Integer.parseInt(sacrificeSlotStr.trim());
+                                    if (p2.placedSlots[sacrificeSlot] != null) {
+                                        System.out.println(strP2Name + " sacrificed " + p2.placedSlots[sacrificeSlot].strName + " in slot " + sacrificeSlot);
+                                        p2.placedSlots[sacrificeSlot] = null;
+                                    }
+                                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                                    System.out.println("Invalid sacrifice slot: " + sacrificeSlotStr);
+                                }
+                            }
+                        }
                         
                         // Create card with actual stats from the message
                         CardClass cardToPlace = new CardClass(cardName, null, new int[]{hp, attack, cost}, sigil);
@@ -335,24 +355,19 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                         // Place the card directly in the slot
                         boolean wasOccupied = (p2.placedSlots[slotIndex] != null);
                         if (wasOccupied) {
-                            p2.intBlood += 1; // Gain blood from sacrifice
+                            System.out.println(strP2Name + " replaced card in slot " + slotIndex);
                         }
                         p2.placedSlots[slotIndex] = cardToPlace;
                         
-                        if (wasOccupied) {
-                            System.out.println(strP2Name + " replaced card in slot " + slotIndex + " with " + cardName + " (HP:" + hp + ", ATK:" + attack + ")");
-                        } else {
-                            System.out.println(strP2Name + " placed " + cardName + " in slot " + slotIndex + " (HP:" + hp + ", ATK:" + attack + ")");
-                        }
+                        // Reset blood to 0 after placement (mirroring local behavior)
+                        p2.intBlood = 0;
+                        
+                        System.out.println(strP2Name + " placed " + cardName + " in slot " + slotIndex + " (HP:" + hp + ", ATK:" + attack + ")");
                         theAnimationPanel.repaint();
                     } catch (NumberFormatException e) {
                         System.out.println("Invalid PLACE_CARD message format");
                     }
                 }
-            }
-
-            // In round events
-            if(strLine.equals("")) {
             }
 
         } else if (event.getSource() == StartGameButton) {

@@ -56,24 +56,28 @@ public class Game {
         for (int i = 0; i < 4; i++) {
             CardClass card = p1.drawCard();
             if (card != null) {
-                System.out.println("  " + (i+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + card.strSigil + ")");
+                String sigilName = card.getSigil() != null ? card.getSigil().getName() : "N/A";
+                System.out.println("  " + (i+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + sigilName + ")");
             }
         }
         CardClass squirrel1 = p1.drawSquirrel();
         if (squirrel1 != null) {
-            System.out.println("  5. " + squirrel1.strName + " (Cost:" + squirrel1.intCost + ", HP:" + squirrel1.intHealth + ", ATK:" + squirrel1.intAttack + ", Sigil:" + squirrel1.strSigil + ")");
+            String sigilName = squirrel1.getSigil() != null ? squirrel1.getSigil().getName() : "N/A";
+            System.out.println("  5. " + squirrel1.strName + " (Cost:" + squirrel1.intCost + ", HP:" + squirrel1.intHealth + ", ATK:" + squirrel1.intAttack + ", Sigil:" + sigilName + ")");
         }
         
         System.out.println("Player 2 draws:");
         for (int i = 0; i < 4; i++) {
             CardClass card = p2.drawCard();
             if (card != null) {
-                System.out.println("  " + (i+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + card.strSigil + ")");
+                String sigilName = card.getSigil() != null ? card.getSigil().getName() : "N/A";
+                System.out.println("  " + (i+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + sigilName + ")");
             }
         }
         CardClass squirrel2 = p2.drawSquirrel();
         if (squirrel2 != null) {
-            System.out.println("  5. " + squirrel2.strName + " (Cost:" + squirrel2.intCost + ", HP:" + squirrel2.intHealth + ", ATK:" + squirrel2.intAttack + ", Sigil:" + squirrel2.strSigil + ")");
+            String sigilName = squirrel2.getSigil() != null ? squirrel2.getSigil().getName() : "N/A";
+            System.out.println("  5. " + squirrel2.strName + " (Cost:" + squirrel2.intCost + ", HP:" + squirrel2.intHealth + ", ATK:" + squirrel2.intAttack + ", Sigil:" + sigilName + ")");
         }
         System.out.println("Each player drew 4 cards + 1 squirrel to start\n");
 
@@ -90,10 +94,7 @@ public class Game {
         blnStarted = true;
     }
 
-    /**
-     * Initialize randomized decks for both players using InscryptionDeck logic
-     * Reads bloodcardlist.csv and Squireldeck.csv to populate player decks
-     */
+    // Initialize randomized decks for both players using InscryptionDeck logic Reads bloodcardlist.csv and Squireldeck.csv to populate player decks
     private void initializeDecks() {
         String strP1Deck[][] = new String[20][5];
         String strP2Deck[][] = new String[20][5];
@@ -325,21 +326,14 @@ public class Game {
             } else {
                 System.out.println("Waiting for players to ready up...");
             }
-        } else if (currentPhase.equals("AttackPhase")) {
-            // Already in attack phase, just execute it
-            if (blnIsHost) {
-                executeAttackPhase();
-            }
         }
+        // Note: Removed the "AttackPhase" else-if to prevent double execution
+        // The attack phase should only execute once when transitioning from DrawingPhase
         // Add more phases as needed
         animationPanel.repaint();
     }
 
-    /**
-     * Player draws from their main deck
-     * @param playerNumber 1 for P1, 2 for P2
-     * @return true if card was drawn successfully
-     */
+    // Player draws from their main deck param playerNumber 1 for P1, 2 for P2
     public boolean playerDrawCard(int intPlayerNumber) {
         PlayerClass player = (intPlayerNumber == 1) ? p1 : p2;
         
@@ -366,11 +360,7 @@ public class Game {
         }
     }
 
-    /**
-     * Player draws a squirrel card
-     * @param playerNumber 1 for P1, 2 for P2
-     * @return true if squirrel was drawn successfully
-     */
+    // Player draws a squirrel card param playerNumber 1 for P1, 2 for P2
     public boolean playerDrawSquirrel(int intPlayerNumber) {
         PlayerClass player = (intPlayerNumber == 1) ? p1 : p2;
         
@@ -397,10 +387,7 @@ public class Game {
         }
     }
 
-    /**
-     * Player readies up for next phase
-     * @param playerNumber 1 for P1, 2 for P2
-     */
+    // Player readies up for next phase param playerNumber 1 for P1, 2 for P2
     public void playerReady(int intPlayerNumber) {
         PlayerClass player = (intPlayerNumber == 1) ? p1 : p2;
         if(player.isReady == true){
@@ -437,10 +424,8 @@ public class Game {
         return p2;
     }
 
-    /**
-     * Execute the attack phase with alternating attacks from bottom and top slots
-     * Bottom slot 0, Top slot 0, Bottom slot 1, Top slot 1, etc.
-     */
+    // Execute the attack phase with alternating attacks from bottom and top slots
+    // Bottom slot 0, Top slot 0, Bottom slot 1, Top slot 1, etc.
     private void executeAttackPhase() {
         System.out.println("\n=== ATTACK PHASE START ===");
         
@@ -474,16 +459,12 @@ public class Game {
         }
     }
     
-    /**
-     * Public method for client to execute attack phase when commanded by host
-     */
+    // Public method for client to execute attack phase when commanded by host
     public void executeAttackPhaseFromNetwork() {
         executeAttackPhase();
     }
     
-    /**
-     * Process the next attack in the queue
-     */
+    // Process the next attack in the queue
     private void processNextAttack() {
         if (intCurrentAttackIndex >= attackQueue.size()) {
             // All attacks processed
@@ -519,9 +500,7 @@ public class Game {
         performAttack(action.attacker, action.defender, action.intSlotIndex, action.attackingCard, action.isBottomAttacking);
     }
     
-    /**
-     * Called when attack animation completes
-     */
+    // Called when attack animation completes
     public void onAttackAnimationComplete() {
         // Only host progresses through attack queue
         if (blnIsHost) {
@@ -531,9 +510,8 @@ public class Game {
         // Client does nothing - waits for next ATTACK_ANIM message from host
     }
     
-    /**
-     * Complete the attack phase and transition to next phase
-     */
+    // Complete the attack phase and transition to next phase
+    
     private void completeAttackPhase() {
         System.out.println("Current Scale - P1: " + p1.intScale + " | P2: " + p2.intScale);
         animationPanel.repaint();
@@ -560,9 +538,7 @@ public class Game {
         animationPanel.repaint();
     }
     
-    /**
-     * Inner class to store attack actions
-     */
+    //Inner class to store attack actions
     private class AttackAction {
         PlayerClass attacker;
         PlayerClass defender;
@@ -639,10 +615,7 @@ public class Game {
         }
     }
 
-    /**
-     * Check scale difference between players
-     * If difference is 5 or more, losing player loses 1 life and both scales reset
-     */
+    // Check scale difference between players
     private void checkScaleDifference() {
         int intScaleDiff = p1.intScale - p2.intScale;
         
