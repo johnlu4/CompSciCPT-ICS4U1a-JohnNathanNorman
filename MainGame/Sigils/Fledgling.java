@@ -1,8 +1,8 @@
-package Tests.Sigils;
+package MainGame.Sigils;
 
-import Tests.CardClass;
-import Tests.PlayerClass;
-import Tests.SigilClass;
+import MainGame.CardClass;
+import MainGame.PlayerClass;
+import MainGame.SigilClass;
 
 public class Fledgling extends SigilClass {
     
