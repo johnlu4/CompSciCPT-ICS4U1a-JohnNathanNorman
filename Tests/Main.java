@@ -417,38 +417,6 @@ public class Main implements ActionListener, FocusListener{
                 // Check if local player won
                 boolean didLocalPlayerWin = winnerName.equals(strP1Name);
                 showGameEnd(didLocalPlayerWin);
-            } else if (game != null && game.blnStarted && strLine.startsWith("CARD_STATE:")){
-                // Handle board state sync from host
-                // Format: CARD_STATE:slotIndex:player:health:attack OR CARD_STATE:slotIndex:player:null
-                String[] parts = strLine.split(":");
-                if (parts.length >= 4){
-                    try{
-                        int intSlotIndex = Integer.parseInt(parts[1]);
-                        String playerSide = parts[2];
-                        
-                        // Determine which player's slots to update (swap perspective)
-                        PlayerClass targetPlayer = playerSide.equals("p1") ? game.getP2() : game.getP1();
-                        
-                        if (parts[3].equals("null")){
-                            // Card was destroyed
-                            targetPlayer.placedSlots[intSlotIndex] = null;
-                            System.out.println("Synced: Slot " + intSlotIndex + " (" + playerSide + ") is empty");
-                        } else if (parts.length == 5){
-                            // Card exists, update stats
-                            int intHealth = Integer.parseInt(parts[3]);
-                            int intAttack = Integer.parseInt(parts[4]);
-                            
-                            if (targetPlayer.placedSlots[intSlotIndex] != null){
-                                targetPlayer.placedSlots[intSlotIndex].intHealth = intHealth;
-                                targetPlayer.placedSlots[intSlotIndex].intAttack = intAttack;
-                                System.out.println("Synced: Slot " + intSlotIndex + " (" + playerSide + ") HP:" + intHealth + " ATK:" + intAttack);
-                            }
-                        }
-                        theAnimationPanel.repaint();
-                    } catch (NumberFormatException e){
-                        System.out.println("Error parsing CARD_STATE: " + e.getMessage());
-                    }
-                }
             }
 
         } else if (event.getSource() == StartGameButton){
