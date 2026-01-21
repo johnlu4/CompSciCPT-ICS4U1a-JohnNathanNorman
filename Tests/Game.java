@@ -53,11 +53,11 @@ public class Game {
         // Draw 4 initial cards and 1 squirrel for each player
         System.out.println("\n=== Initial Card Draw ===");
         System.out.println("Player 1 draws:");
-        for (int i = 0; i < 4; i++) {
+        for (int intI = 0; intI < 4; intI++) {
             CardClass card = p1.drawCard();
             if (card != null) {
                 String sigilName = card.getSigil() != null ? card.getSigil().getName() : "N/A";
-                System.out.println("  " + (i+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + sigilName + ")");
+                System.out.println("  " + (intI+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + sigilName + ")");
             }
         }
         CardClass squirrel1 = p1.drawSquirrel();
@@ -67,11 +67,11 @@ public class Game {
         }
         
         System.out.println("Player 2 draws:");
-        for (int i = 0; i < 4; i++) {
+        for (int intI = 0; intI < 4; intI++) {
             CardClass card = p2.drawCard();
             if (card != null) {
                 String sigilName = card.getSigil() != null ? card.getSigil().getName() : "N/A";
-                System.out.println("  " + (i+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + sigilName + ")");
+                System.out.println("  " + (intI+1) + ". " + card.strName + " (Cost:" + card.intCost + ", HP:" + card.intHealth + ", ATK:" + card.intAttack + ", Sigil:" + sigilName + ")");
             }
         }
         CardClass squirrel2 = p2.drawSquirrel();
@@ -213,34 +213,34 @@ public class Game {
         }
 
         // Copy to player objects
-        for (int i = 0; i < 20; i++) {
-            for (int j = 0; j < 5; j++) {
-                p1.strDeck[i][j] = strP1Deck[i][j];
-                p2.strDeck[i][j] = strP2Deck[i][j];
+        for (int intI = 0; intI < 20; intI++) {
+            for (int intJ = 0; intJ < 5; intJ++) {
+                p1.strDeck[intI][intJ] = strP1Deck[intI][intJ];
+                p2.strDeck[intI][intJ] = strP2Deck[intI][intJ];
             }
         }
 
         // Debug: Print Player 1 deck
         System.out.println("\n=== Player 1 Deck ===");
-        for (int i = 0; i < 20; i++) {
-            if (p1.strDeck[i][0] != null) {
-                System.out.print(i + ": " + p1.strDeck[i][0] + ", ");
-                System.out.print("Cost:" + p1.strDeck[i][1] + ", ");
-                System.out.print("HP:" + p1.strDeck[i][2] + ", ");
-                System.out.print("ATK:" + p1.strDeck[i][3] + ", ");
-                System.out.println("Sigil:" + p1.strDeck[i][4]);
+        for (int intI = 0; intI < 20; intI++) {
+            if (p1.strDeck[intI][0] != null) {
+                System.out.print(intI + ": " + p1.strDeck[intI][0] + ", ");
+                System.out.print("Cost:" + p1.strDeck[intI][1] + ", ");
+                System.out.print("HP:" + p1.strDeck[intI][2] + ", ");
+                System.out.print("ATK:" + p1.strDeck[intI][3] + ", ");
+                System.out.println("Sigil:" + p1.strDeck[intI][4]);
             }
         }
 
         // Debug: Print Player 2 deck
         System.out.println("\n=== Player 2 Deck ===");
-        for (int i = 0; i < 20; i++) {
-            if (p2.strDeck[i][0] != null) {
-                System.out.print(i + ": " + p2.strDeck[i][0] + ", ");
-                System.out.print("Cost:" + p2.strDeck[i][1] + ", ");
-                System.out.print("HP:" + p2.strDeck[i][2] + ", ");
-                System.out.print("ATK:" + p2.strDeck[i][3] + ", ");
-                System.out.println("Sigil:" + p2.strDeck[i][4]);
+        for (int intI = 0; intI < 20; intI++) {
+            if (p2.strDeck[intI][0] != null) {
+                System.out.print(intI + ": " + p2.strDeck[intI][0] + ", ");
+                System.out.print("Cost:" + p2.strDeck[intI][1] + ", ");
+                System.out.print("HP:" + p2.strDeck[intI][2] + ", ");
+                System.out.print("ATK:" + p2.strDeck[intI][3] + ", ");
+                System.out.println("Sigil:" + p2.strDeck[intI][4]);
             }
         }
 
@@ -280,10 +280,10 @@ public class Game {
         }
 
         // Copy squirrel decks to player objects
-        for (int i = 0; i < 10; i++) {
-            for (int j = 0; j < 5; j++) {
-                p1.strSquirrelDeck[i][j] = strSqDeck1[i][j];
-                p2.strSquirrelDeck[i][j] = strSqDeck2[i][j];
+        for (int intI = 0; intI < 10; intI++) {
+            for (int intJ = 0; intJ < 5; intJ++) {
+                p1.strSquirrelDeck[intI][intJ] = strSqDeck1[intI][intJ];
+                p2.strSquirrelDeck[intI][intJ] = strSqDeck2[intI][intJ];
             }
         }
 
@@ -434,17 +434,17 @@ public class Game {
         intCurrentAttackIndex = 0;
         
         // Attack left to right, alternating bottom (P1) and top (P2)
-        for (int slot = 0; slot < 4; slot++) {
+        for (int intSlot = 0; intSlot < 4; intSlot++) {
             // Bottom slot attacks (Player 1)
-            CardClass bottomCard = p1.placedSlots[slot];
+            CardClass bottomCard = p1.placedSlots[intSlot];
             if (bottomCard != null && bottomCard.intAttack > 0) {
-                attackQueue.add(new AttackAction(p1, p2, slot, bottomCard, true));
+                attackQueue.add(new AttackAction(p1, p2, intSlot, bottomCard, true));
             }
             
             // Top slot attacks (Player 2)
-            CardClass topCard = p2.placedSlots[slot];
+            CardClass topCard = p2.placedSlots[intSlot];
             if (topCard != null && topCard.intAttack > 0) {
-                attackQueue.add(new AttackAction(p2, p1, slot, topCard, false));
+                attackQueue.add(new AttackAction(p2, p1, intSlot, topCard, false));
             }
         }
         
@@ -511,7 +511,6 @@ public class Game {
     }
     
     // Complete the attack phase and transition to next phase
-    
     private void completeAttackPhase() {
         System.out.println("Current Scale - P1: " + p1.intScale + " | P2: " + p2.intScale);
         animationPanel.repaint();
@@ -538,7 +537,7 @@ public class Game {
         animationPanel.repaint();
     }
     
-    //Inner class to store attack actions
+    // Inner class to store attack actions
     private class AttackAction {
         PlayerClass attacker;
         PlayerClass defender;
@@ -662,14 +661,7 @@ public class Game {
         }
     }
 
-    // methods for gameplay logic, e.g., executeAttack, checkWinCondition, etc.
-    /**
-     * Attempts to play a card from a player's hand to the board
-     * @param playerNumber The player number (1 or 2)
-     * @param card The CardClass object to play
-     * @param cardSlot The slot index (0-3) to place the card
-     * @return true if card was successfully played, false otherwise
-     */
+    // methods for gameplay logic, e.g., executeAttack, checkWinCondition, etc./
     public boolean playCard(int intPlayerNumber, CardClass card, int intCardSlot) {
         PlayerClass player = (intPlayerNumber == 1) ? p1 : p2;
         
@@ -703,9 +695,7 @@ public class Game {
         return success;
     }
     
-    /**
-     * Sync client back to drawing phase after host completes attack phase
-     */
+    // Sync client back to drawing phase after host completes attack phase
     public void syncReturnToDrawing() {
         currentPhase = "DrawingPhase";
         // Reset drawing phase tracking for both players

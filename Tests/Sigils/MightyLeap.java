@@ -6,15 +6,17 @@ import Tests.SigilClass;
 
 public class MightyLeap extends SigilClass {
     
+    public String strSigilActivation = "Passive";
+
     public MightyLeap() {
         this.strName = "Mighty Leap";
-        this.strDescription = "Attacks the opposing player directly, ignoring blockers";
+        this.strDescription = "Blocks the opposing creature with Airborne sigil";
     }
     
     @Override
-    public void activateSigilEffect(CardClass card, PlayerClass player, PlayerClass opponent) {
-        System.out.println(card.strName + " uses Mighty Leap!");
-        player.intScale += 1;
-        System.out.println("Direct damage to opponent! Player scale: " + player.intScale);
+    public void activateSigilEffect(CardClass card, PlayerClass player, PlayerClass opponent, int intSlotIndex) {
+        System.out.println(card.strName + " has Mighty Leap!");
+        // This is a passive ability - cards with Mighty Leap can block Airborne creatures
+        // Implementation is handled in the game's attack phase logic
     }
 }

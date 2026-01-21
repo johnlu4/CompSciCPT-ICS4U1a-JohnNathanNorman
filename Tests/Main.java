@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.awt.*; 
 import javax.imageio.ImageIO;
 
-public class Main implements ActionListener, KeyListener, FocusListener{
+public class Main implements ActionListener, FocusListener{
     // Properties
     int intPort = 0;
     int intHelpMenupage = 1;
@@ -59,21 +59,24 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     JAnimation theAnimationPanel = new JAnimation();   
     SuperSocketMaster ssm = null;
 
-    // Methods
-    public void SwitchTabs(JPanel thePanel){
-
-        theMainFrame.setContentPane(thePanel);
-        theMainFrame.repaint();
-        theMainFrame.pack();
-    }
-
-    public void SendSystemMessage(String message) {
-        if (ssm != null && game != null && game.blnStarted) {
-            theChatArea.append("[SYSTEM]: " + message + "\n");
-            ssm.sendText("SYSTEM: " + message);
+    // Utility Methods
+    // small helper panel that paints a background image behind child components
+    static class BackgroundPanel extends JPanel {
+        private BufferedImage bg;
+        BackgroundPanel(BufferedImage img) {
+            this.bg = img;
+            setOpaque(true);
+        }
+        @Override
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (bg != null) {
+                g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
+            }
         }
     }
 
+    // method to load images from resources
     public BufferedImage getImage(String strImagePath){
         BufferedImage Image = null;
         String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/Tests/" + strImagePath;
@@ -90,7 +93,27 @@ public class Main implements ActionListener, KeyListener, FocusListener{
         }
         return Image;
     }
-    // main gameplay
+    
+    // Methods
+
+    // method to switch between different panels
+    public void SwitchTabs(JPanel thePanel){
+
+        theMainFrame.setContentPane(thePanel);
+        theMainFrame.repaint();
+        theMainFrame.pack();
+    }
+
+    // method to send system messages to chat area and remote client
+    public void SendSystemMessage(String message) {
+        if (ssm != null && game != null && game.blnStarted) {
+            theChatArea.append("[SYSTEM]: " + message + "\n");
+            ssm.sendText("SYSTEM: " + message);
+        }
+    }
+
+
+    // start game method
     public void StartGame(){
         PlayerClass p1 = new PlayerClass(strP1Name);
         PlayerClass p2 = new PlayerClass(strP2Name);
@@ -214,20 +237,20 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 String[] parts = strLine.split(":");
                 if (parts.length == 3) {
                     try {
-                        int slotIndex = Integer.parseInt(parts[1]);
+                        int intSlotIndex = Integer.parseInt(parts[1]);
                         boolean isBottomAttacking = Boolean.parseBoolean(parts[2]);
                         
                         // Get the attacking card
                         CardClass attackingCard = null;
                         if (isBottomAttacking) {
-                            attackingCard = game.getP2().placedSlots[slotIndex]; // Client sees host as P2
+                            attackingCard = game.getP2().placedSlots[intSlotIndex]; // Client sees host as P2
                         } else {
-                            attackingCard = game.getP1().placedSlots[slotIndex]; // Client sees self as P1
+                            attackingCard = game.getP1().placedSlots[intSlotIndex]; // Client sees self as P1
                         }
                         
                         if (attackingCard != null) {
-                            theAnimationPanel.startAttackAnimation(attackingCard, slotIndex, !isBottomAttacking); // Flip perspective
-                            System.out.println("Received attack animation: slot " + slotIndex + ", isBottomAttacking=" + !isBottomAttacking);
+                            theAnimationPanel.startAttackAnimation(attackingCard, intSlotIndex, !isBottomAttacking); // Flip perspective
+                            System.out.println("Received attack animation: slot " + intSlotIndex + ", isBottomAttacking=" + !isBottomAttacking);
                         }
                     } catch (NumberFormatException e) {
                         System.out.println("Error parsing ATTACK_ANIM: " + e.getMessage());
@@ -239,26 +262,26 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 String[] parts = strLine.split(":");
                 if (parts.length == 5) {
                     try {
-                        int slotIndex = Integer.parseInt(parts[1]);
+                        int intSlotIndex = Integer.parseInt(parts[1]);
                         boolean isBottomAttacking = Boolean.parseBoolean(parts[2]);
                         String hpResult = parts[3];
-                        int defenderBlood = Integer.parseInt(parts[4]);
+                        int intDefenderBlood = Integer.parseInt(parts[4]);
                         
                         // Get defender (opposite of attacker)
                         PlayerClass defender = isBottomAttacking ? game.getP1() : game.getP2(); // Flip perspective
                         
                         if (hpResult.equals("destroyed")) {
                             // Card was destroyed
-                            defender.placedSlots[slotIndex] = null;
-                            defender.intBlood = defenderBlood;
-                            System.out.println("Card at slot " + slotIndex + " destroyed. Defender blood: " + defenderBlood);
+                            defender.placedSlots[intSlotIndex] = null;
+                            defender.intBlood = intDefenderBlood;
+                            System.out.println("Card at slot " + intSlotIndex + " destroyed. Defender blood: " + intDefenderBlood);
                         } else {
                             // Card took damage but survived
-                            int newHP = Integer.parseInt(hpResult);
-                            if (defender.placedSlots[slotIndex] != null) {
-                                defender.placedSlots[slotIndex].intHealth = newHP;
-                                defender.intBlood = defenderBlood;
-                                System.out.println("Card at slot " + slotIndex + " HP: " + newHP + ". Defender blood: " + defenderBlood);
+                            int intNewHP = Integer.parseInt(hpResult);
+                            if (defender.placedSlots[intSlotIndex] != null) {
+                                defender.placedSlots[intSlotIndex].intHealth = intNewHP;
+                                defender.intBlood = intDefenderBlood;
+                                System.out.println("Card at slot " + intSlotIndex + " HP: " + intNewHP + ". Defender blood: " + intDefenderBlood);
                             }
                         }
                         theAnimationPanel.repaint();
@@ -272,12 +295,12 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 String[] parts = strLine.split(":");
                 if (parts.length == 3) {
                     try {
-                        int p1Scale = Integer.parseInt(parts[1]);
-                        int p2Scale = Integer.parseInt(parts[2]);
+                        int intP1Scale = Integer.parseInt(parts[1]);
+                        int intP2Scale = Integer.parseInt(parts[2]);
                         
                         // Swap because client sees host as P2
-                        game.getP1().intScale = p2Scale;
-                        game.getP2().intScale = p1Scale;
+                        game.getP1().intScale = intP2Scale;
+                        game.getP2().intScale = intP1Scale;
                         
                         System.out.println("Scale updated - P1: " + game.getP1().intScale + " | P2: " + game.getP2().intScale);
                         theAnimationPanel.repaint();
@@ -291,12 +314,12 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 String[] parts = strLine.split(":");
                 if (parts.length == 3) {
                     try {
-                        int p1Lives = Integer.parseInt(parts[1]);
-                        int p2Lives = Integer.parseInt(parts[2]);
+                        int intP1Lives = Integer.parseInt(parts[1]);
+                        int intP2Lives = Integer.parseInt(parts[2]);
                         
                         // Swap because client sees host as P2
-                        game.getP1().intLives = p2Lives;
-                        game.getP2().intLives = p1Lives;
+                        game.getP1().intLives = intP2Lives;
+                        game.getP2().intLives = intP1Lives;
                         
                         System.out.println("Lives updated - P1: " + game.getP1().intLives + " | P2: " + game.getP2().intLives);
                         theAnimationPanel.repaint();
@@ -323,11 +346,11 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                 String[] parts = strLine.split(":", 8);
                 if (parts.length >= 7) {
                     try {
-                        int slotIndex = Integer.parseInt(parts[1]);
+                        int intSlotIndex = Integer.parseInt(parts[1]);
                         String cardName = parts[2];
-                        int cost = Integer.parseInt(parts[3]);
-                        int hp = Integer.parseInt(parts[4]);
-                        int attack = Integer.parseInt(parts[5]);
+                        int intCost = Integer.parseInt(parts[3]);
+                        int intHp = Integer.parseInt(parts[4]);
+                        int intAttack = Integer.parseInt(parts[5]);
                         String sigil = parts[6];
                         String sacrificeSlots = parts.length == 8 ? parts[7] : "none";
                         
@@ -338,10 +361,10 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                             String[] sacrificeIndices = sacrificeSlots.split(",");
                             for (String sacrificeSlotStr : sacrificeIndices) {
                                 try {
-                                    int sacrificeSlot = Integer.parseInt(sacrificeSlotStr.trim());
-                                    if (p2.placedSlots[sacrificeSlot] != null) {
-                                        System.out.println(strP2Name + " sacrificed " + p2.placedSlots[sacrificeSlot].strName + " in slot " + sacrificeSlot);
-                                        p2.placedSlots[sacrificeSlot] = null;
+                                    int intSacrificeSlot = Integer.parseInt(sacrificeSlotStr.trim());
+                                    if (p2.placedSlots[intSacrificeSlot] != null) {
+                                        System.out.println(strP2Name + " sacrificed " + p2.placedSlots[intSacrificeSlot].strName + " in slot " + intSacrificeSlot);
+                                        p2.placedSlots[intSacrificeSlot] = null;
                                     }
                                 } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
                                     System.out.println("Invalid sacrifice slot: " + sacrificeSlotStr);
@@ -350,19 +373,19 @@ public class Main implements ActionListener, KeyListener, FocusListener{
                         }
                         
                         // Create card with actual stats from the message
-                        CardClass cardToPlace = new CardClass(cardName, null, new int[]{hp, attack, cost}, sigil);
+                        CardClass cardToPlace = new CardClass(cardName, null, new int[]{intHp, intAttack, intCost}, sigil);
                         
                         // Place the card directly in the slot
-                        boolean wasOccupied = (p2.placedSlots[slotIndex] != null);
+                        boolean wasOccupied = (p2.placedSlots[intSlotIndex] != null);
                         if (wasOccupied) {
-                            System.out.println(strP2Name + " replaced card in slot " + slotIndex);
+                            System.out.println(strP2Name + " replaced card in slot " + intSlotIndex);
                         }
-                        p2.placedSlots[slotIndex] = cardToPlace;
+                        p2.placedSlots[intSlotIndex] = cardToPlace;
                         
                         // Reset blood to 0 after placement (mirroring local behavior)
                         p2.intBlood = 0;
                         
-                        System.out.println(strP2Name + " placed " + cardName + " in slot " + slotIndex + " (HP:" + hp + ", ATK:" + attack + ")");
+                        System.out.println(strP2Name + " placed " + cardName + " in slot " + intSlotIndex + " (HP:" + intHp + ", ATK:" + intAttack + ")");
                         theAnimationPanel.repaint();
                     } catch (NumberFormatException e) {
                         System.out.println("Invalid PLACE_CARD message format");
@@ -437,20 +460,6 @@ public class Main implements ActionListener, KeyListener, FocusListener{
             }
         }
 
-    }
-
-    // KeyListener methods
-
-    public void keyTyped(KeyEvent event) {
-        // Key typed handling code
-    }
-
-    public void keyPressed(KeyEvent event) {
-        // Key pressed handling code
-    }
-
-    public void keyReleased(KeyEvent event) {
-        // Key released handling code
     }
 
     // FocusListener methods
@@ -597,21 +606,5 @@ public class Main implements ActionListener, KeyListener, FocusListener{
     // Constructor
     public static void main(String[] args) {
         new Main();
-    }
-    
-    // small helper panel that paints a background image behind child components
-    static class BackgroundPanel extends JPanel {
-        private BufferedImage bg;
-        BackgroundPanel(BufferedImage img) {
-            this.bg = img;
-            setOpaque(true);
-        }
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (bg != null) {
-                g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
-            }
-        }
     }
 }
