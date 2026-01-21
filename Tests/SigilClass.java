@@ -6,7 +6,7 @@ public abstract class SigilClass {
     protected String strDescription;
 
     // Abstract method that concrete sigil classes must implement
-    public abstract void activateSigilEffect(CardClass card, PlayerClass player, PlayerClass opponent);
+    public abstract void activateSigilEffect(CardClass card, PlayerClass player, PlayerClass opponent, int intSlotIndex);
     
     // Getters
     public String getName() {

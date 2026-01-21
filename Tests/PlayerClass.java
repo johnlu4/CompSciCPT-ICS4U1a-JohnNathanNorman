@@ -21,27 +21,28 @@ public class PlayerClass {
     
     // Hand and deck tracking
     public ArrayList<CardClass> hand = new ArrayList<>();
-    private int deckIndex = 0;
-    private int squirrelIndex = 0;
+    public int deckIndex = 0;
+    public int squirrelIndex = 0;
     
     // Drawing phase tracking
     public boolean hasDrawnThisTurn = false;
     public boolean isReady = false;
 
     // Methods
-    public boolean placeCard(int slotIndex, CardClass card){
-        if (slotIndex < 0 || slotIndex >= placedSlots.length) return false;
+    // Place a card in a slot (single sacrifice or no sacrifice)
+    public boolean placeCard(int intSlotIndex, CardClass card){
+        if (intSlotIndex < 0 || intSlotIndex >= placedSlots.length) return false;
         if (card == null) return false;
         
         // Squirrels (cost 0) cannot be placed on occupied slots
-        if (card.intCost == 0 && placedSlots[slotIndex] != null) {
+        if (card.intCost == 0 && placedSlots[intSlotIndex] != null) {
             System.out.println("Cannot place squirrel on occupied slot - no sacrifice allowed!");
             return false;
         }
         
-        if (placedSlots[slotIndex] != null){
+        if (placedSlots[intSlotIndex] != null){
             // Check if card in slot is already dead (HP <= 0)
-            if (placedSlots[slotIndex].intHealth <= 0) {
+            if (placedSlots[intSlotIndex].intHealth <= 0) {
                 System.out.println("Cannot sacrifice a dead card!");
                 return false;
             }
@@ -49,21 +50,21 @@ public class PlayerClass {
             if (card.intCost > intBlood + 1){
                 return false;
             }else {
-                placedSlots[slotIndex] = null;
+                placedSlots[intSlotIndex] = null;
                 intBlood += 1;
             }
         }
-        if (card.intCost > intBlood) return false; // not enough money
+        if (card.intCost > intBlood) return false; // not enough blood
 
         intBlood = 0;
-        placedSlots[slotIndex] = card;
+        placedSlots[intSlotIndex] = card;
         hand.remove(card); // Remove from hand when placed
         return true;
     }
     
     // Place a card with multiple sacrifices (for cards requiring 2+ blood)
-    public boolean placeCard(int slotIndex, CardClass card, ArrayList<Integer> sacrificeSlots){
-        if (slotIndex < 0 || slotIndex >= placedSlots.length) return false;
+    public boolean placeCard(int intSlotIndex, CardClass card, ArrayList<Integer> sacrificeSlots){
+        if (intSlotIndex < 0 || intSlotIndex >= placedSlots.length) return false;
         if (card == null) return false;
         if (sacrificeSlots == null) sacrificeSlots = new ArrayList<>();
         
@@ -74,68 +75,64 @@ public class PlayerClass {
         }
         
         // Validate all sacrifice slots
-        for (int sacrificeSlot : sacrificeSlots) {
-            if (sacrificeSlot < 0 || sacrificeSlot >= placedSlots.length) {
-                System.out.println("Invalid sacrifice slot: " + sacrificeSlot);
+        for (int intSacrificeSlot : sacrificeSlots) {
+            if (intSacrificeSlot < 0 || intSacrificeSlot >= placedSlots.length) {
+                System.out.println("Invalid sacrifice slot: " + intSacrificeSlot);
                 return false;
             }
-            if (placedSlots[sacrificeSlot] == null) {
-                System.out.println("Cannot sacrifice empty slot: " + sacrificeSlot);
+            if (placedSlots[intSacrificeSlot] == null) {
+                System.out.println("Cannot sacrifice empty slot: " + intSacrificeSlot);
                 return false;
             }
-            if (placedSlots[sacrificeSlot].intHealth <= 0) {
-                System.out.println("Cannot sacrifice dead card in slot: " + sacrificeSlot);
+            if (placedSlots[intSacrificeSlot].intHealth <= 0) {
+                System.out.println("Cannot sacrifice dead card in slot: " + intSacrificeSlot);
                 return false;
             }
         }
         
         // Calculate total blood available (current blood + sacrifices)
-        int totalBlood = intBlood + sacrificeSlots.size();
+        int intTotalBlood = intBlood + sacrificeSlots.size();
         
         // If placing on an occupied slot that's not being sacrificed, add 1 more blood
-        if (placedSlots[slotIndex] != null && !sacrificeSlots.contains(slotIndex)) {
-            if (placedSlots[slotIndex].intHealth > 0) {
-                totalBlood += 1;
+        if (placedSlots[intSlotIndex] != null && !sacrificeSlots.contains(intSlotIndex)) {
+            if (placedSlots[intSlotIndex].intHealth > 0) {
+                intTotalBlood += 1;
             }
         }
         
         // Check if we have enough blood
-        if (card.intCost > totalBlood) {
-            System.out.println("Not enough blood! Need: " + card.intCost + ", Have: " + totalBlood);
+        if (card.intCost > intTotalBlood) {
+            System.out.println("Not enough blood! Need: " + card.intCost + ", Have: " + intTotalBlood);
             return false;
         }
         
         // Perform sacrifices
-        for (int sacrificeSlot : sacrificeSlots) {
-            System.out.println("Sacrificing card in slot " + sacrificeSlot + ": " + placedSlots[sacrificeSlot].strName);
-            placedSlots[sacrificeSlot] = null;
+        for (int intSacrificeSlot : sacrificeSlots) {
+            System.out.println("Sacrificing card in slot " + intSacrificeSlot + ": " + placedSlots[intSacrificeSlot].strName);
+            placedSlots[intSacrificeSlot] = null;
         }
         
         // If placing on an occupied slot that wasn't sacrificed, clear it
-        if (placedSlots[slotIndex] != null && !sacrificeSlots.contains(slotIndex)) {
-            System.out.println("Replacing card in slot " + slotIndex);
-            placedSlots[slotIndex] = null;
+        if (placedSlots[intSlotIndex] != null && !sacrificeSlots.contains(intSlotIndex)) {
+            System.out.println("Replacing card in slot " + intSlotIndex);
+            placedSlots[intSlotIndex] = null;
         }
         
         // Reset blood to 0 after payment
         intBlood = 0;
         
         // Place the card
-        placedSlots[slotIndex] = card;
+        placedSlots[intSlotIndex] = card;
         hand.remove(card); // Remove from hand when placed
         
-        System.out.println("Successfully placed " + card.strName + " in slot " + slotIndex);
+        System.out.println("Successfully placed " + card.strName + " in slot " + intSlotIndex);
         return true;
     }
 
-    /**
-     * Place a squirrel card in a slot (free - no blood cost)
-     * param slotIndex The slot (0-3) to place the squirrel
-     * return true if squirrel was placed successfully, false otherwise
-     */
-    public boolean placeSquirrel(int slotIndex) {
-        if (slotIndex < 0 || slotIndex >= placedSlots.length) return false;
-        if (placedSlots[slotIndex] != null) return false; // slot occupied
+    // Place a squirrel card in a slot (free - no blood cost)
+    public boolean placeSquirrel(int intSlotIndex) {
+        if (intSlotIndex < 0 || intSlotIndex >= placedSlots.length) return false;
+        if (placedSlots[intSlotIndex] != null) return false; // slot occupied
         
         // Draw a squirrel and place it for free
         CardClass squirrel = drawSquirrel();
@@ -145,16 +142,13 @@ public class PlayerClass {
         }
         
         // Place squirrel without blood cost
-        placedSlots[slotIndex] = squirrel;
+        placedSlots[intSlotIndex] = squirrel;
         hand.remove(squirrel); // Remove from hand when placed
-        System.out.println(strPlayerName + " placed a free squirrel in slot " + slotIndex);
+        System.out.println(strPlayerName + " placed a free squirrel in slot " + intSlotIndex);
         return true;
     }
 
-    /**
-     * Draw a card from the main deck and add it to hand
-     * @return The drawn CardClass object, or null if deck is empty
-     */
+    // Draw a card from the main deck and add it to hand
     public CardClass drawCard() {
         if (deckIndex >= strDeck.length || strDeck[deckIndex][0] == null) {
             return null; // Deck exhausted
@@ -168,10 +162,7 @@ public class PlayerClass {
         return card;
     }
 
-    /**
-     * Draw a squirrel card and add it to hand
-     * @return The drawn squirrel CardClass object, or null if squirrel deck is empty
-     */
+    // Draw a squirrel card and add it to hand
     public CardClass drawSquirrel() {
         if (squirrelIndex >= strSquirrelDeck.length || strSquirrelDeck[squirrelIndex][0] == null) {
             return null; // Squirrel deck exhausted
@@ -185,64 +176,31 @@ public class PlayerClass {
         return card;
     }
 
-    /**
-     * Create a CardClass instance from String deck data
-     * @param index The index in the deck array
-     * @param isSquirrel Whether to use squirrel deck or main deck
-     * @return A new CardClass instance
-     */
-    private CardClass createCardFromDeckData(int index, boolean isSquirrel) {
+    // Create a CardClass instance from String deck data
+    private CardClass createCardFromDeckData(int intIndex, boolean isSquirrel) {
         String[][] sourceDeck = isSquirrel ? strSquirrelDeck : strDeck;
         
-        if (sourceDeck[index][0] == null) {
+        if (sourceDeck[intIndex][0] == null) {
             return null;
         }
 
-        // Parse CSV format: name, cost, HP, attack, sigil
-        String name = sourceDeck[index][0];
-        int cost = Integer.parseInt(sourceDeck[index][1]);
-        int hp = Integer.parseInt(sourceDeck[index][2]);
-        int attack = Integer.parseInt(sourceDeck[index][3]);
-        String sigil = sourceDeck[index][4];
+        // CSV format: name, cost, HP, attack, sigil
+        String name = sourceDeck[intIndex][0];
+        int intCost = Integer.parseInt(sourceDeck[intIndex][1]);
+        int intHp = Integer.parseInt(sourceDeck[intIndex][2]);
+        int intAttack = Integer.parseInt(sourceDeck[intIndex][3]);
+        String sigil = sourceDeck[intIndex][4];
 
         // Create and return a CardClass instance
-        int[] stats = {hp, attack, cost};
+        int[] stats = {intHp, intAttack, intCost};
         return new CardClass(name, null, stats, sigil);
     }
 
-    /**
-     * Reset deck indices for a new game
-     */
-    public void resetDeck() {
-        deckIndex = 0;
-        squirrelIndex = 0;
-        hand.clear();
-        intScale = 0;
-        for (int i = 0; i < placedSlots.length; i++) {
-            placedSlots[i] = null;
-        }
-    }
     
-    /**
-     * Reset drawing phase tracking
-     */
+    // Reset drawing phase tracking
     public void resetDrawPhase() {
         hasDrawnThisTurn = false;
         isReady = false;
-    }
-    
-    /**
-     * Get the current deck index (for previewing next card)
-     */
-    public int getDeckIndex() {
-        return deckIndex;
-    }
-    
-    /**
-     * Get the current squirrel deck index (for previewing next card)
-     */
-    public int getSquirrelIndex() {
-        return squirrelIndex;
     }
 
     // Constructor

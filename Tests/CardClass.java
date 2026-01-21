@@ -27,9 +27,9 @@ public class CardClass {
         System.out.println(strName + " attacks for " + intAttack + " damage!");
     }
     
-    public void sigilActivate(PlayerClass player, PlayerClass opponent) {
+    public void sigilActivate(PlayerClass player, PlayerClass opponent, int intSlotIndex) {
         if (sigil != null) {
-            sigil.activateSigilEffect(this, player, opponent);
+            sigil.activateSigilEffect(this, player, opponent, intSlotIndex);
         }
     }
     
