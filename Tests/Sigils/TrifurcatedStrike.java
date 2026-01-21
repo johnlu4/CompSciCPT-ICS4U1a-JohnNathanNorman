@@ -5,12 +5,11 @@ import Tests.PlayerClass;
 import Tests.SigilClass;
 
 public class TrifurcatedStrike extends SigilClass {
-
-    public String strSigilActivation = "AttackPhase";
     
     public TrifurcatedStrike() {
         this.strName = "Trifurcated Strike";
         this.strDescription = "Attacks each opposing space to the left, right, and center";
+        this.strSigilActivation = "AttackPhase";
     }
     
     @Override

@@ -6,11 +6,10 @@ import Tests.SigilClass;
 
 public class Airborne extends SigilClass {
     
-    public String strSigilActivation = "AttackPhase";
-
     public Airborne() {
         this.strName = "Airborne";
         this.strDescription = "strike the opposing player directly, ignoring blockers";
+        this.strSigilActivation = "AttackPhase";
     }
     
     @Override

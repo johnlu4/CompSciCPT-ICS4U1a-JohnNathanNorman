@@ -6,11 +6,10 @@ import Tests.SigilClass;
 
 public class BifurcatedStrike extends SigilClass {
 
-    public String strSigilActivation = "AttackPhase";
-
     public BifurcatedStrike() {
         this.strName = "Bifurcated Strike";
         this.strDescription = "Attacks each opposing space to the left and right of the attacking card";
+        this.strSigilActivation = "AttackPhase";
     }
     
     @Override

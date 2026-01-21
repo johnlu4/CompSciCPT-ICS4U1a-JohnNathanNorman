@@ -87,6 +87,10 @@ public class Game {
         // Reset draw flags for the first drawing phase (they shouldn't draw yet, but flag should be ready)
         p1.resetDrawPhase();
         p2.resetDrawPhase();
+        
+        // Activate DrawingPhase sigils for any cards already placed (though unlikely at game start)
+        // This ensures consistency - every Drawing Phase triggers sigils
+        activatePhaseSigils("DrawingPhase");
 
         // Notify animation panel
         animationPanel.repaint();
@@ -318,9 +322,15 @@ public class Game {
                     System.out.println("Initialization phase complete");
                 }
                 
-                // Only host executes attack phase, then sends results
+                // Only host executes attack phase logic, then sends results
                 if (blnIsHost) {
+                    // Host activates sigils and processes attacks
+                    activatePhaseSigils("AttackPhase");
                     executeAttackPhase();
+                } else {
+                    // Client also activates AttackPhase sigils (for visual/local effects)
+                    // But doesn't execute attacks - waits for host's ATTACK_ANIM messages
+                    activatePhaseSigils("AttackPhase");
                 }
                 // Client just waits for attack animations and damage updates from host
             } else {
@@ -524,6 +534,9 @@ public class Game {
         p2.resetDrawPhase();
         System.out.println("Drawing Phase started - Players can draw a card");
         
+        // Activate sigils with "DrawingPhase" trigger
+        activatePhaseSigils("DrawingPhase");
+        
         // Send system message
         if (mainInstance != null) {
             mainInstance.SendSystemMessage("~~ Drawing Phase ~~");
@@ -702,7 +715,42 @@ public class Game {
         p1.resetDrawPhase();
         p2.resetDrawPhase();
         System.out.println("Synced to Drawing Phase - Players can draw a card");
+        
+        // Activate sigils with "DrawingPhase" trigger
+        activatePhaseSigils("DrawingPhase");
+        
         animationPanel.repaint();
+    }
+    
+    // Activate all sigils for cards on the board that match the specified phase
+    private void activatePhaseSigils(String strPhase) {
+        System.out.println("\n=== Activating " + strPhase + " Sigils ===");
+        
+        // Activate P1's sigils
+        for (int intI = 0; intI < 4; intI++) {
+            CardClass card = p1.placedSlots[intI];
+            if (card != null && card.hasSigil()) {
+                SigilClass sigil = card.getSigil();
+                if (sigil.getActivationPhase().equals(strPhase)) {
+                    System.out.println("[" + p1.strPlayerName + " Slot " + intI + "] Activating " + sigil.getName());
+                    card.sigilActivate(p1, p2, intI);
+                }
+            }
+        }
+        
+        // Activate P2's sigils
+        for (int intI = 0; intI < 4; intI++) {
+            CardClass card = p2.placedSlots[intI];
+            if (card != null && card.hasSigil()) {
+                SigilClass sigil = card.getSigil();
+                if (sigil.getActivationPhase().equals(strPhase)) {
+                    System.out.println("[" + p2.strPlayerName + " Slot " + intI + "] Activating " + sigil.getName());
+                    card.sigilActivate(p2, p1, intI);
+                }
+            }
+        }
+        
+        System.out.println("=== Phase Sigils Activated ===");
     }
     
 }

@@ -6,11 +6,10 @@ import Tests.SigilClass;
 
 public class Stinky extends SigilClass {
     
-    public String strSigilActivation = "DrawingPhase";
-
     public Stinky() {
         this.strName = "Stinky";
         this.strDescription = "Opposing creatures adjacent to this card lose 1 attack";
+        this.strSigilActivation = "DrawingPhase";
     }
     
     @Override
