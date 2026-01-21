@@ -24,8 +24,8 @@ public class JAnimation extends JPanel implements MouseListener {
 
     private BufferedImage bg = getImage("Game.png");
     private BufferedImage bellImage = getImage("Bell.png");
-    private BufferedImage RegularCardBackImage = getImage("RegularCardBack.png");
-    private BufferedImage SquirrelCardBackImage = getImage("SquirrelCardBack.png");
+    private BufferedImage RegularCardBackImage = getImage("cardsprites/RegularCardBack.png");
+    private BufferedImage SquirrelCardBackImage = getImage("cardsprites/SquirrelCardBack.png");
     
     // Selected card tracking
     private int intSelectedCardIndex = -1; // -1 means no card selected
