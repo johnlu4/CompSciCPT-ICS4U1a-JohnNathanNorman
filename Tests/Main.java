@@ -61,16 +61,16 @@ public class Main implements ActionListener, FocusListener{
 
     // Utility Methods
     // small helper panel that paints a background image behind child components
-    static class BackgroundPanel extends JPanel {
+    static class BackgroundPanel extends JPanel{
         private BufferedImage bg;
-        BackgroundPanel(BufferedImage img) {
+        BackgroundPanel(BufferedImage img){
             this.bg = img;
             setOpaque(true);
         }
         @Override
-        public void paintComponent(Graphics g) {
+        public void paintComponent(Graphics g){
             super.paintComponent(g);
-            if (bg != null) {
+            if (bg != null){
                 g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
             }
         }
@@ -81,13 +81,13 @@ public class Main implements ActionListener, FocusListener{
         BufferedImage Image = null;
         String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/Tests/" + strImagePath;
         InputStream is = getClass().getResourceAsStream(resourcePath);
-        if (is == null) {
+        if (is == null){
             System.out.println("Resource not found: " + resourcePath);
             return null;
         }
-        try {
+        try{
             Image = ImageIO.read(is);
-        } catch (Exception e) {
+        } catch (Exception e){
             System.out.println("Failed to read image: " + resourcePath + " -> " + e.getMessage());
             Image = null;
         }
@@ -105,8 +105,8 @@ public class Main implements ActionListener, FocusListener{
     }
 
     // method to send system messages to chat area and remote client
-    public void SendSystemMessage(String message) {
-        if (ssm != null && game != null && game.blnStarted) {
+    public void SendSystemMessage(String message){
+        if (ssm != null && game != null && game.blnStarted){
             theChatArea.append("[SYSTEM]: " + message + "\n");
             ssm.sendText("SYSTEM: " + message);
         }
@@ -137,9 +137,9 @@ public class Main implements ActionListener, FocusListener{
 
     // ActionListener methods
     @Override
-    public void actionPerformed(ActionEvent event) {
+    public void actionPerformed(ActionEvent event){
         // Action handling code
-        if (event.getSource() == HostButton) {
+        if (event.getSource() == HostButton){
             // Host game button clicked
             try{
                 intPort = Integer.parseInt(PortField.getText());
@@ -166,7 +166,7 @@ public class Main implements ActionListener, FocusListener{
             blnIsHost = true; // Mark this client as host
 
             StatusLabel.setText("Status: Waiting for a player to join... Port: " + intPort);
-        } else if (event.getSource() == JoinButton) {
+        } else if (event.getSource() == JoinButton){
             // Join game button clicked
             try{
                 intPort = Integer.parseInt(PortField.getText());
@@ -191,7 +191,7 @@ public class Main implements ActionListener, FocusListener{
                 StatusLabel.setText("Status: Connected, waiting for host to start the game...");
                 
                 ssm.sendText("PLAYER_JOINED");
-            }else {
+            }else{
                 System.out.println("Failed to join game session.");
                 StatusLabel.setText("Status: Failed to connect to host.");
                 JoinButton.setVisible(true);
@@ -199,7 +199,7 @@ public class Main implements ActionListener, FocusListener{
                 IPAddressField.setVisible(true);
                 PortField.setVisible(true);
             }
-        } else if (event.getSource() == ssm) {
+        } else if (event.getSource() == ssm){
             // SuperSocketMaster event
             String strLine = ssm.readText();
             System.out.println("Received: " + strLine);
@@ -212,56 +212,56 @@ public class Main implements ActionListener, FocusListener{
                 StatusLabel.setText("Status: Player joined. You can start the game...");
                 StartGameButton.setVisible(true);
                 nameField.setVisible(true);
-            } else if (strLine.startsWith("PLAYER_NAME: ")) {
+            } else if (strLine.startsWith("PLAYER_NAME: ")){
                 strP2Name = strLine.substring(13);
                 System.out.println("Player 2 Name: " + strP2Name);
             } 
 
             // In-game events
-            if (game != null && game.blnStarted && strLine.startsWith("CHAT: ")) {
+            if (game != null && game.blnStarted && strLine.startsWith("CHAT: ")){
                 String chatMessage = strLine.substring(6);
                 theChatArea.append(strP2Name + ": " + chatMessage + "\n");
-            } else if (game != null && game.blnStarted && strLine.equals("SYSTEM: ")) {
+            } else if (game != null && game.blnStarted && strLine.equals("SYSTEM: ")){
                 String systemMessage = strLine.substring(8);
                 theChatArea.append("[SYSTEM]: " + systemMessage + "\n");
-            } else if (game != null && game.blnStarted && strLine.equals("NEXT_PHASE")) {
+            } else if (game != null && game.blnStarted && strLine.equals("NEXT_PHASE")){
                 game.nextPhase();
-            } else if (game != null && game.blnStarted && strLine.equals("RETURN_TO_DRAWING")) {
+            } else if (game != null && game.blnStarted && strLine.equals("RETURN_TO_DRAWING")){
                 // Other client completed attack phase, sync back to drawing phase
                 System.out.println("Received RETURN_TO_DRAWING from remote");
                 game.syncReturnToDrawing();
                 theAnimationPanel.repaint();
-            } else if (game != null && game.blnStarted && strLine.startsWith("ATTACK_ANIM:")) {
+            } else if (game != null && game.blnStarted && strLine.startsWith("ATTACK_ANIM:")){
                 // Handle attack animation from host
                 // Format: ATTACK_ANIM:slotIndex:isBottomAttacking
                 String[] parts = strLine.split(":");
-                if (parts.length == 3) {
-                    try {
+                if (parts.length == 3){
+                    try{
                         int intSlotIndex = Integer.parseInt(parts[1]);
                         boolean isBottomAttacking = Boolean.parseBoolean(parts[2]);
                         
                         // Get the attacking card
                         CardClass attackingCard = null;
-                        if (isBottomAttacking) {
+                        if (isBottomAttacking){
                             attackingCard = game.getP2().placedSlots[intSlotIndex]; // Client sees host as P2
-                        } else {
+                        } else{
                             attackingCard = game.getP1().placedSlots[intSlotIndex]; // Client sees self as P1
                         }
                         
-                        if (attackingCard != null) {
+                        if (attackingCard != null){
                             theAnimationPanel.startAttackAnimation(attackingCard, intSlotIndex, !isBottomAttacking); // Flip perspective
                             System.out.println("Received attack animation: slot " + intSlotIndex + ", isBottomAttacking=" + !isBottomAttacking);
                         }
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException e){
                         System.out.println("Error parsing ATTACK_ANIM: " + e.getMessage());
                     }
                 }
-            } else if (game != null && game.blnStarted && strLine.startsWith("DAMAGE_RESULT:")) {
+            } else if (game != null && game.blnStarted && strLine.startsWith("DAMAGE_RESULT:")){
                 // Handle damage result from host
                 // Format: DAMAGE_RESULT:slotIndex:isBottomAttacking:newHP_or_destroyed:defenderBlood
                 String[] parts = strLine.split(":");
-                if (parts.length == 5) {
-                    try {
+                if (parts.length == 5){
+                    try{
                         int intSlotIndex = Integer.parseInt(parts[1]);
                         boolean isBottomAttacking = Boolean.parseBoolean(parts[2]);
                         String hpResult = parts[3];
@@ -270,31 +270,31 @@ public class Main implements ActionListener, FocusListener{
                         // Get defender (opposite of attacker)
                         PlayerClass defender = isBottomAttacking ? game.getP1() : game.getP2(); // Flip perspective
                         
-                        if (hpResult.equals("destroyed")) {
+                        if (hpResult.equals("destroyed")){
                             // Card was destroyed
                             defender.placedSlots[intSlotIndex] = null;
                             defender.intBlood = intDefenderBlood;
                             System.out.println("Card at slot " + intSlotIndex + " destroyed. Defender blood: " + intDefenderBlood);
-                        } else {
+                        } else{
                             // Card took damage but survived
                             int intNewHP = Integer.parseInt(hpResult);
-                            if (defender.placedSlots[intSlotIndex] != null) {
+                            if (defender.placedSlots[intSlotIndex] != null){
                                 defender.placedSlots[intSlotIndex].intHealth = intNewHP;
                                 defender.intBlood = intDefenderBlood;
                                 System.out.println("Card at slot " + intSlotIndex + " HP: " + intNewHP + ". Defender blood: " + intDefenderBlood);
                             }
                         }
                         theAnimationPanel.repaint();
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException e){
                         System.out.println("Error parsing DAMAGE_RESULT: " + e.getMessage());
                     }
                 }
-            } else if (game != null && game.blnStarted && strLine.startsWith("SCALE_UPDATE:")) {
+            } else if (game != null && game.blnStarted && strLine.startsWith("SCALE_UPDATE:")){
                 // Handle scale update from host
                 // Format: SCALE_UPDATE:p1Scale:p2Scale
                 String[] parts = strLine.split(":");
-                if (parts.length == 3) {
-                    try {
+                if (parts.length == 3){
+                    try{
                         int intP1Scale = Integer.parseInt(parts[1]);
                         int intP2Scale = Integer.parseInt(parts[2]);
                         
@@ -304,16 +304,16 @@ public class Main implements ActionListener, FocusListener{
                         
                         System.out.println("Scale updated - P1: " + game.getP1().intScale + " | P2: " + game.getP2().intScale);
                         theAnimationPanel.repaint();
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException e){
                         System.out.println("Error parsing SCALE_UPDATE: " + e.getMessage());
                     }
                 }
-            } else if (game != null && game.blnStarted && strLine.startsWith("LIFE_UPDATE:")) {
+            } else if (game != null && game.blnStarted && strLine.startsWith("LIFE_UPDATE:")){
                 // Handle life update from host
                 // Format: LIFE_UPDATE:p1Lives:p2Lives
                 String[] parts = strLine.split(":");
-                if (parts.length == 3) {
-                    try {
+                if (parts.length == 3){
+                    try{
                         int intP1Lives = Integer.parseInt(parts[1]);
                         int intP2Lives = Integer.parseInt(parts[2]);
                         
@@ -323,29 +323,29 @@ public class Main implements ActionListener, FocusListener{
                         
                         System.out.println("Lives updated - P1: " + game.getP1().intLives + " | P2: " + game.getP2().intLives);
                         theAnimationPanel.repaint();
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException e){
                         System.out.println("Error parsing LIFE_UPDATE: " + e.getMessage());
                     }
                 }
-            } else if (game != null && game.blnStarted && strLine.equals("PLAYER_READY")) {
+            } else if (game != null && game.blnStarted && strLine.equals("PLAYER_READY")){
                 // Sync player 2's ready status when receiving message from remote player
                 game.getP2().isReady = true;
                 theChatArea.append("[SYSTEM]: " + strP2Name + " is ready!\n");
                 System.out.println(strP2Name + " is ready!");
                 
                 // Check if both players are ready to advance phase
-                if (game.getP1().isReady && game.getP2().isReady) {
+                if (game.getP1().isReady && game.getP2().isReady){
                     game.nextPhase();
-                } else {
+                } else{
                     System.out.println("Waiting for other player...");
                 }
                 theAnimationPanel.repaint();
-            } else if (game != null && game.blnStarted && strLine.startsWith("PLACE_CARD:")) {
+            } else if (game != null && game.blnStarted && strLine.startsWith("PLACE_CARD:")){
                 // Handle card placement from remote player
                 // Format: PLACE_CARD:slotIndex:cardName:cost:hp:attack:sigil:sacrificeSlots
                 String[] parts = strLine.split(":", 8);
-                if (parts.length >= 7) {
-                    try {
+                if (parts.length >= 7){
+                    try{
                         int intSlotIndex = Integer.parseInt(parts[1]);
                         String cardName = parts[2];
                         int intCost = Integer.parseInt(parts[3]);
@@ -357,16 +357,16 @@ public class Main implements ActionListener, FocusListener{
                         PlayerClass p2 = game.getP2();
                         
                         // Handle sacrifice slots first
-                        if (!sacrificeSlots.equals("none") && !sacrificeSlots.isEmpty()) {
+                        if (!sacrificeSlots.equals("none") && !sacrificeSlots.isEmpty()){
                             String[] sacrificeIndices = sacrificeSlots.split(",");
-                            for (String sacrificeSlotStr : sacrificeIndices) {
-                                try {
+                            for (String sacrificeSlotStr : sacrificeIndices){
+                                try{
                                     int intSacrificeSlot = Integer.parseInt(sacrificeSlotStr.trim());
-                                    if (p2.placedSlots[intSacrificeSlot] != null) {
+                                    if (p2.placedSlots[intSacrificeSlot] != null){
                                         System.out.println(strP2Name + " sacrificed " + p2.placedSlots[intSacrificeSlot].strName + " in slot " + intSacrificeSlot);
                                         p2.placedSlots[intSacrificeSlot] = null;
                                     }
-                                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
+                                } catch (NumberFormatException | ArrayIndexOutOfBoundsException e){
                                     System.out.println("Invalid sacrifice slot: " + sacrificeSlotStr);
                                 }
                             }
@@ -377,7 +377,7 @@ public class Main implements ActionListener, FocusListener{
                         
                         // Place the card directly in the slot
                         boolean wasOccupied = (p2.placedSlots[intSlotIndex] != null);
-                        if (wasOccupied) {
+                        if (wasOccupied){
                             System.out.println(strP2Name + " replaced card in slot " + intSlotIndex);
                         }
                         p2.placedSlots[intSlotIndex] = cardToPlace;
@@ -387,18 +387,18 @@ public class Main implements ActionListener, FocusListener{
                         
                         System.out.println(strP2Name + " placed " + cardName + " in slot " + intSlotIndex + " (HP:" + intHp + ", ATK:" + intAttack + ")");
                         theAnimationPanel.repaint();
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException e){
                         System.out.println("Invalid PLACE_CARD message format");
                     }
                 }
             }
 
-        } else if (event.getSource() == StartGameButton) {
+        } else if (event.getSource() == StartGameButton){
             // Start game button clicked
             System.out.println("Starting game...");
             StartGame();
             ssm.sendText("START_GAME");
-        } else if (event.getSource() == Maintimer) {
+        } else if (event.getSource() == Maintimer){
             theAnimationPanel.repaint();
         } else if (event.getSource() == helpButton){
             SwitchTabs(helpPanel);
@@ -419,17 +419,17 @@ public class Main implements ActionListener, FocusListener{
             intHelpMenupage -= 1;
             helpImage = getImage("HelpMenu" + intHelpMenupage + ".png");
 
-            if (helpImage != null) {
+            if (helpImage != null){
 
 
-                if (helpImageLabel != null) {
+                if (helpImageLabel != null){
                     helpPanel.remove(helpImageLabel);
                 }
                 helpImageLabel = new JLabel(new ImageIcon(helpImage));
                 helpPanel.add(helpImageLabel, BorderLayout.CENTER);
                 helpPanel.revalidate();
                 helpPanel.repaint();
-            } else {
+            } else{
                 intHelpMenupage += 1; 
                 System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java) for page " + intHelpMenupage);
             }
@@ -438,8 +438,8 @@ public class Main implements ActionListener, FocusListener{
             intHelpMenupage += 1;
             helpImage = getImage("HelpMenu" + intHelpMenupage + ".png");
 
-            if (helpImage != null) {
-                if (helpImageLabel != null) {
+            if (helpImage != null){
+                if (helpImageLabel != null){
                     helpPanel.remove(helpImageLabel);
                 }
                 helpImageLabel = new JLabel(new ImageIcon(helpImage));
@@ -447,13 +447,13 @@ public class Main implements ActionListener, FocusListener{
                 helpPanel.revalidate();
                 helpPanel.repaint();
                 
-            } else {
+            } else{
                 intHelpMenupage -= 1; 
                 System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java) for page " + intHelpMenupage);
             }
-        } else if (event.getSource() == theChatText) {
+        } else if (event.getSource() == theChatText){
             String chatMessage = theChatText.getText();
-            if (!chatMessage.trim().isEmpty() && game != null && game.blnStarted) {
+            if (!chatMessage.trim().isEmpty() && game != null && game.blnStarted){
                 theChatArea.append(strP1Name + ": " + chatMessage + "\n");
                 ssm.sendText("CHAT: " + chatMessage);
                 theChatText.setText("");
@@ -463,15 +463,15 @@ public class Main implements ActionListener, FocusListener{
     }
 
     // FocusListener methods
-    public void focusGained(FocusEvent event) {
+    public void focusGained(FocusEvent event){
         // Focus gained handling code
-        if (event.getSource() == IPAddressField && IPAddressField.getText().equals("Enter IP Address")) {
+        if (event.getSource() == IPAddressField && IPAddressField.getText().equals("Enter IP Address")){
             IPAddressField.setText("");
-        } else if (event.getSource() == PortField && PortField.getText().equals("Enter Port Number")) {
+        } else if (event.getSource() == PortField && PortField.getText().equals("Enter Port Number")){
             PortField.setText("");
         }
     }
-    public void focusLost(FocusEvent event) {
+    public void focusLost(FocusEvent event){
 
     }
 
@@ -488,7 +488,7 @@ public class Main implements ActionListener, FocusListener{
         MainMenuPanel.setPreferredSize(new Dimension(1280, 720));
         MainMenuPanel.setLayout(null);
 
-        if (MainMenuImage == null) {
+        if (MainMenuImage == null){
             System.out.println("Warning: MainMenu.png not found on classpath (Tests/Main.java)");
         }
 
@@ -548,10 +548,10 @@ public class Main implements ActionListener, FocusListener{
 
         helpImage = getImage("HelpMenu1.png");
         
-        if (helpImage != null) {
+        if (helpImage != null){
             helpImageLabel = new JLabel(new ImageIcon(helpImage));
             helpPanel.add(helpImageLabel, BorderLayout.CENTER);
-        } else {
+        } else{
             System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java)");
         }
 
@@ -562,9 +562,9 @@ public class Main implements ActionListener, FocusListener{
        
         aboutImage = getImage("AboutMenu.png");
 
-        if (aboutImage != null) {
+        if (aboutImage != null){
             aboutPanel.add(new JLabel(new ImageIcon(aboutImage)), BorderLayout.CENTER);
-        } else {
+        } else{
             JLabel missing = new JLabel("About image not found", SwingConstants.CENTER);
             aboutPanel.add(missing, BorderLayout.CENTER);
             System.out.println("Warning: AboutMenu.png not found on classpath (Tests/Main.java)");
@@ -604,7 +604,7 @@ public class Main implements ActionListener, FocusListener{
     }
 
     // Constructor
-    public static void main(String[] args) {
+    public static void main(String[] args){
         new Main();
     }
 }

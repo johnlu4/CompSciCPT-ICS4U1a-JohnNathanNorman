@@ -1,6 +1,6 @@
 package Tests;
 
-public abstract class SigilClass {
+public abstract class SigilClass{
     // Properties
     protected String strName;
     protected String strDescription;
@@ -10,15 +10,15 @@ public abstract class SigilClass {
     public abstract void activateSigilEffect(CardClass card, PlayerClass player, PlayerClass opponent, int intSlotIndex);
     
     // Getters
-    public String getName() {
+    public String getName(){
         return strName;
     }
     
-    public String getDescription() {
+    public String getDescription(){
         return strDescription;
     }
     
-    public String getActivationPhase() {
+    public String getActivationPhase(){
         return strSigilActivation;
     }
 }
