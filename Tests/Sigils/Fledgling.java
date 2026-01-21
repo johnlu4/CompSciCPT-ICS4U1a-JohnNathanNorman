@@ -5,12 +5,11 @@ import Tests.PlayerClass;
 import Tests.SigilClass;
 
 public class Fledgling extends SigilClass {
-
-    public String strSigilActivation = "DrawingPhase";
     
     public Fledgling() {
         this.strName = "Fledgling";
         this.strDescription = "Gains +1 attack after surviving a turn";
+        this.strSigilActivation = "DrawingPhase";
     }
     
     @Override

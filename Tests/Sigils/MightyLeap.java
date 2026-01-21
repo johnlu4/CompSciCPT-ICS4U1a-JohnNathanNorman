@@ -6,11 +6,10 @@ import Tests.SigilClass;
 
 public class MightyLeap extends SigilClass {
     
-    public String strSigilActivation = "Passive";
-
     public MightyLeap() {
         this.strName = "Mighty Leap";
         this.strDescription = "Blocks the opposing creature with Airborne sigil";
+        this.strSigilActivation = "Passive";
     }
     
     @Override

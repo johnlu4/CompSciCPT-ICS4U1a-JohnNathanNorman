@@ -6,11 +6,10 @@ import Tests.SigilClass;
 
 public class RabbitHole extends SigilClass {
     
-    public String strSigilActivation = "DrawingPhase";
-
     public RabbitHole() {
         this.strName = "Rabbit Hole";
         this.strDescription = "When played, creates a Rabbit in your hand";
+        this.strSigilActivation = "DrawingPhase";
     }
     
     @Override

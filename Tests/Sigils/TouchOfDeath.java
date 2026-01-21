@@ -5,12 +5,11 @@ import Tests.PlayerClass;
 import Tests.SigilClass;
 
 public class TouchOfDeath extends SigilClass {
-
-    public String strSigilActivation = "AttackPhase";
     
     public TouchOfDeath() {
         this.strName = "Touch of Death";
         this.strDescription = "Instantly kills any card it damages";
+        this.strSigilActivation = "AttackPhase";
     }
     
     @Override
