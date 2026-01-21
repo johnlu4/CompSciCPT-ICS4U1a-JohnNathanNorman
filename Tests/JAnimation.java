@@ -82,6 +82,7 @@ public class JAnimation extends JPanel implements MouseListener {
     // Death Slot
     private int intDeathSlotX = 1175;
     private int intDeathSlotY = 280;
+    private CardClass mostRecentDeadCard = null; // Track the most recently dead card
 
 
     
@@ -876,6 +877,11 @@ public class JAnimation extends JPanel implements MouseListener {
         this.ssm = ssm;
     }
 
+    public void setMostRecentDeadCard(CardClass card) {
+        this.mostRecentDeadCard = card;
+        repaint();
+    }
+
     @Override
     public void paintComponent(Graphics paint){
         super.paintComponent(paint);
@@ -1004,6 +1010,16 @@ public class JAnimation extends JPanel implements MouseListener {
         // Draw card being drawn on top of everything
         if (blnIsDrawAnimating && drawingCard != null) {
             drawDrawingCard(paint);
+        }
+        
+        // Draw the most recent dead card in the death slot
+        if (mostRecentDeadCard != null) {
+            BufferedImage cardImage = getCardImage(mostRecentDeadCard.strName);
+            if (cardImage != null) {
+                int intCardX = intDeathSlotX - 60;
+                int intCardY = intDeathSlotY - 75;
+                paint.drawImage(cardImage, intCardX, intCardY, 120, 150, this);
+            }
         }
     }
 

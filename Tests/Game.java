@@ -27,17 +27,6 @@ public class Game{
     String strBigDeck[][] = new String[56][6];
     String strEvoDeck[][] = new String[2][4];
 
-    // Constructor
-    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel, SuperSocketMaster ssm, Main mainInstance, boolean blnIsHost) {
-        this.p1 = p1;
-        this.p2 = p2;
-        this.animationPanel = animationPanel;
-        this.ssm = ssm;
-        this.mainInstance = mainInstance;
-        this.blnIsHost = blnIsHost;
-        animationPanel.setGame(this);
-    }
-
     // Methods
     public void startGame(){
         // Initialize player decks, blood, etc.
@@ -284,10 +273,10 @@ public class Game{
         }
 
         // Copy squirrel decks to player objects
-        for (int intI = 0; intI < 10; intI++){
-            for (int intJ = 0; intJ < 5; intJ++){
-                p1.strSquirrelDeck[intI][intJ] = strSqDeck1[intI][intJ];
-                p2.strSquirrelDeck[intI][intJ] = strSqDeck2[intI][intJ];
+        for (int i = 0; i < 10; i++){
+            for (int j = 0; j < 5; j++){
+                p1.strSquirrelDeck[i][j] = strSqDeck1[i][j];
+                p2.strSquirrelDeck[i][j] = strSqDeck2[i][j];
             }
         }
 
@@ -322,15 +311,10 @@ public class Game{
                     System.out.println("Initialization phase complete");
                 }
                 
-<<<<<<< HEAD
-                // Only host executes attack phase, then sends results
-                if (blnIsHost){
-=======
                 // Only host executes attack phase logic, then sends results
                 if (blnIsHost){
                     // Host activates sigils and processes attacks
                     activatePhaseSigils("AttackPhase");
->>>>>>> 0a1ebeb290ae0c75c999ad477473a7abba427a75
                     executeAttackPhase();
                 } else{
                     // Client also activates AttackPhase sigils (for visual/local effects)
@@ -554,23 +538,6 @@ public class Game{
         
         animationPanel.repaint();
     }
-    
-    // Inner class to store attack actions
-    private class AttackAction {
-        PlayerClass attacker;
-        PlayerClass defender;
-        int intSlotIndex;
-        CardClass attackingCard;
-        boolean isBottomAttacking;
-        
-        AttackAction(PlayerClass attacker, PlayerClass defender, int intSlotIndex, CardClass attackingCard, boolean isBottomAttacking) {
-            this.attacker = attacker;
-            this.defender = defender;
-            this.intSlotIndex = intSlotIndex;
-            this.attackingCard = attackingCard;
-            this.isBottomAttacking = isBottomAttacking;
-        }
-    }
 
     // Perform an attack from an attacking card to the opposite slot
     private void performAttack(PlayerClass attacker, PlayerClass defender, int intSlotIndex, CardClass attackingCard, boolean isBottomAttacking){
@@ -593,6 +560,10 @@ public class Game{
             // Remove card immediately if health drops to 0 or below
             if (opposingCard.intHealth <= 0){
                 System.out.println("  → " + opposingCard.strName + " was destroyed!");
+                
+                // Update death slot with the card that just died
+                animationPanel.setMostRecentDeadCard(opposingCard);
+                
                 defender.placedSlots[intSlotIndex] = null;
                 
                 // Add blood to defender (for sacrificing in next turn)
@@ -747,7 +718,7 @@ public class Game{
         p2.resetDrawPhase();
         System.out.println("Synced to Drawing Phase - Players can draw a card");
         
-        // Activate sigils with "DrawingPhase" trigger
+        // activate sigil with drawingphase
         activatePhaseSigils("DrawingPhase");
         
         animationPanel.repaint();
