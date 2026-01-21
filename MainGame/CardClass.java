@@ -1,14 +1,14 @@
-package Tests;
+package MainGame;
 
 import java.awt.image.BufferedImage;
 
-import Tests.Sigils.BifurcatedStrike;
-import Tests.Sigils.Fledgling;
-import Tests.Sigils.MightyLeap;
-import Tests.Sigils.RabbitHole;
-import Tests.Sigils.Stinky;
-import Tests.Sigils.TouchOfDeath;
-import Tests.Sigils.TrifurcatedStrike;
+import MainGame.Sigils.BifurcatedStrike;
+import MainGame.Sigils.Fledgling;
+import MainGame.Sigils.MightyLeap;
+import MainGame.Sigils.RabbitHole;
+import MainGame.Sigils.Stinky;
+import MainGame.Sigils.TouchOfDeath;
+import MainGame.Sigils.TrifurcatedStrike;
 
 public class CardClass {
     // Properties

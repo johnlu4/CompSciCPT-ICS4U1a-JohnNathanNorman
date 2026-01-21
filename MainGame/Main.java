@@ -1,4 +1,4 @@
-package Tests;
+package MainGame;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -84,7 +84,7 @@ public class Main implements ActionListener, FocusListener{
     // load images from resources
     public BufferedImage getImage(String strImagePath){
         BufferedImage Image = null;
-        String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/Tests/" + strImagePath;
+        String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/MainGame/" + strImagePath;
         InputStream is = getClass().getResourceAsStream(resourcePath);
         if (is == null){
             System.out.println("Resource not found: " + resourcePath);

@@ -1,4 +1,4 @@
-package Tests;
+package MainGame;
 
 public abstract class SigilClass{
     // Properties

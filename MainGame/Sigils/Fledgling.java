@@ -32,7 +32,7 @@ public class Fledgling extends SigilClass {
             card.intAttack = 3;
             card.intHealth = 2;
             // Raven has Airborne sigil
-            card.setSigil(new Tests.Sigils.Airborne());
+            card.setSigil(new Airborne());
             System.out.println("  → Raven Egg hatched into Raven! (Cost: 2, ATK: 3, HP: 2, Sigil: Airborne)");
         } else {
             // Default behavior: just increase attack by 1

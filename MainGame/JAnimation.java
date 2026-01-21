@@ -1,4 +1,4 @@
-package Tests;
+package MainGame;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
@@ -112,7 +112,7 @@ public class JAnimation extends JPanel implements MouseListener {
         } else {
             pathsToTry[0] = "/" + strImagePath;
         }
-        pathsToTry[1] = "/Tests/" + strImagePath;
+        pathsToTry[1] = "/MainGame/" + strImagePath;
         pathsToTry[2] = "/cardsprites/" + strImagePath;
         
         for (String path : pathsToTry) {

@@ -213,30 +213,6 @@ public class Game{
             }
         }
 
-        // Debug: Print Player 1 deck
-        System.out.println("\n=== Player 1 Deck ===");
-        for (int intI = 0; intI < 20; intI++){
-            if (p1.strDeck[intI][0] != null){
-                System.out.print(intI + ": " + p1.strDeck[intI][0] + ", ");
-                System.out.print("Cost:" + p1.strDeck[intI][1] + ", ");
-                System.out.print("HP:" + p1.strDeck[intI][2] + ", ");
-                System.out.print("ATK:" + p1.strDeck[intI][3] + ", ");
-                System.out.println("Sigil:" + p1.strDeck[intI][4]);
-            }
-        }
-
-        // Debug: Print Player 2 deck
-        System.out.println("\n=== Player 2 Deck ===");
-        for (int intI = 0; intI < 20; intI++){
-            if (p2.strDeck[intI][0] != null){
-                System.out.print(intI + ": " + p2.strDeck[intI][0] + ", ");
-                System.out.print("Cost:" + p2.strDeck[intI][1] + ", ");
-                System.out.print("HP:" + p2.strDeck[intI][2] + ", ");
-                System.out.print("ATK:" + p2.strDeck[intI][3] + ", ");
-                System.out.println("Sigil:" + p2.strDeck[intI][4]);
-            }
-        }
-
         // Close blood card file
         try{
             thefile.close();
@@ -313,22 +289,15 @@ public class Game{
                 
                 // Only host executes attack phase logic, then sends results
                 if (blnIsHost){
-                    // Host activates sigils and processes attacks
                     activatePhaseSigils("AttackPhase");
                     executeAttackPhase();
                 } else{
-                    // Client also activates AttackPhase sigils (for visual/local effects)
-                    // But doesn't execute attacks - waits for host's ATTACK_ANIM messages
                     activatePhaseSigils("AttackPhase");
                 }
-                // Client just waits for attack animations and damage updates from host
             } else{
                 System.out.println("Waiting for players to ready up...");
             }
         }
-        // Note: Removed the "AttackPhase" else-if to prevent double execution
-        // The attack phase should only execute once when transitioning from DrawingPhase
-        // Add more phases as needed
         animationPanel.repaint();
     }
 
