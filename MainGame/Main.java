@@ -457,7 +457,7 @@ public class Main implements ActionListener, FocusListener{
                 helpPanel.repaint();
             } else{
                 intHelpMenupage += 1; 
-                System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java) for page " + intHelpMenupage);
+                System.out.println("Warning: HelpMenu.png not found on classpath (MainGame/Main.java) for page " + intHelpMenupage);
             }
 
         } else if (event.getSource() == RightHelpButton){
@@ -475,7 +475,7 @@ public class Main implements ActionListener, FocusListener{
                 
             } else{
                 intHelpMenupage -= 1; 
-                System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java) for page " + intHelpMenupage);
+                System.out.println("Warning: HelpMenu.png not found on classpath (MainGame/Main.java) for page " + intHelpMenupage);
             }
         } else if (event.getSource() == theChatText){
             String chatMessage = theChatText.getText();
@@ -515,7 +515,7 @@ public class Main implements ActionListener, FocusListener{
         MainMenuPanel.setLayout(null);
 
         if (MainMenuImage == null){
-            System.out.println("Warning: MainMenu.png not found on classpath (Tests/Main.java)");
+            System.out.println("Warning: MainMenu.png not found on classpath (MainGame/Main.java)");
         }
 
         HostButton.setBounds(540, 300, 200, 50);
@@ -578,7 +578,7 @@ public class Main implements ActionListener, FocusListener{
             helpImageLabel = new JLabel(new ImageIcon(helpImage));
             helpPanel.add(helpImageLabel, BorderLayout.CENTER);
         } else{
-            System.out.println("Warning: HelpMenu.png not found on classpath (Tests/Main.java)");
+            System.out.println("Warning: HelpMenu.png not found on classpath (MainGame/Main.java)");
         }
 
 
@@ -593,7 +593,7 @@ public class Main implements ActionListener, FocusListener{
         } else{
             JLabel missing = new JLabel("About image not found", SwingConstants.CENTER);
             aboutPanel.add(missing, BorderLayout.CENTER);
-            System.out.println("Warning: AboutMenu.png not found on classpath (Tests/Main.java)");
+            System.out.println("Warning: AboutMenu.png not found on classpath (MainGame/Main.java)");
         }
 
         returnMenuButton.setBounds(10, 10, 150, 30);
@@ -609,10 +609,10 @@ public class Main implements ActionListener, FocusListener{
         gameEndLoseImage = getImage("gameendlose.png");
         
         if (gameEndWinImage == null) {
-            System.out.println("Warning: gameendwin.png not found on classpath (Tests/Main.java)");
+            System.out.println("Warning: gameendwin.png not found on classpath (MainGame/Main.java)");
         }
         if (gameEndLoseImage == null) {
-            System.out.println("Warning: gameendlose.png not found on classpath (Tests/Main.java)");
+            System.out.println("Warning: gameendlose.png not found on classpath (MainGame/Main.java)");
         }
 
         // the animation setup

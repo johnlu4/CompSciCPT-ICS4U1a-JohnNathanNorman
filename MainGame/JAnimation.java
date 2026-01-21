@@ -24,8 +24,8 @@ public class JAnimation extends JPanel implements MouseListener {
 
     private BufferedImage bg = getImage("Game.png");
     private BufferedImage bellImage = getImage("Bell.png");
-    private BufferedImage RegularCardBackImage = getImage("cardsprites/RegularCardBack.png");
-    private BufferedImage SquirrelCardBackImage = getImage("cardsprites/SquirrelCardBack.png");
+    private BufferedImage RegularCardBackImage = getImage("RegularCardBack.png");
+    private BufferedImage SquirrelCardBackImage = getImage("SquirrelCardBack.png");
     
     // Selected card tracking
     private int intSelectedCardIndex = -1; // -1 means no card selected
@@ -105,15 +105,24 @@ public class JAnimation extends JPanel implements MouseListener {
         InputStream is = null;
         String resourcePath = null;
         
-        // Try multiple locations
-        String[] pathsToTry = new String[3];
+        String[] pathsToTry;
         if (strImagePath.startsWith("/")) {
-            pathsToTry[0] = strImagePath;
+            pathsToTry = new String[]{
+                strImagePath,
+                "/MainGame" + strImagePath
+            };
+        } else if (strImagePath.startsWith("cardsprites/")) {
+            pathsToTry = new String[]{
+                "/" + strImagePath,
+                "/MainGame/" + strImagePath
+            };
         } else {
-            pathsToTry[0] = "/" + strImagePath;
+            pathsToTry = new String[]{
+                "/" + strImagePath,
+                "/MainGame/" + strImagePath,
+                "/cardsprites/" + strImagePath
+            };
         }
-        pathsToTry[1] = "/MainGame/" + strImagePath;
-        pathsToTry[2] = "/cardsprites/" + strImagePath;
         
         for (String path : pathsToTry) {
             is = getClass().getResourceAsStream(path);
@@ -125,14 +134,28 @@ public class JAnimation extends JPanel implements MouseListener {
         
         if (is == null) {
             System.out.println("Resource not found in any location: " + strImagePath);
+            System.out.println("Attempted paths:");
+            for (String path : pathsToTry) {
+                System.out.println("  - " + path);
+            }
             return null;
         }
         
         try {
             Image = ImageIO.read(is);
+            is.close(); // Important: close the stream after reading
         } catch (Exception e) {
             System.out.println("Failed to read image: " + resourcePath + " -> " + e.getMessage());
             Image = null;
+        } finally {
+            // Ensure stream is closed even if an exception occurs
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Exception e) {
+                    // Ignore close exception
+                }
+            }
         }
         return Image;
     }
