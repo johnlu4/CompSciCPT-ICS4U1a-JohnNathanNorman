@@ -50,6 +50,11 @@ public class Main implements ActionListener, FocusListener{
     BufferedImage aboutImage;
     JButton aboutButton = new JButton("About");
     
+    // Game end properties
+    JPanel gameEndPanel = new JPanel();
+    BufferedImage gameEndWinImage;
+    BufferedImage gameEndLoseImage;
+    
     // Round menu properties
     JTextArea theChatArea = new JTextArea();
     JTextField theChatText = new JTextField();
@@ -76,7 +81,7 @@ public class Main implements ActionListener, FocusListener{
         }
     }
 
-    // method to load images from resources
+    // load images from resources
     public BufferedImage getImage(String strImagePath){
         BufferedImage Image = null;
         String resourcePath = strImagePath.startsWith("/") ? strImagePath : "/Tests/" + strImagePath;
@@ -105,11 +110,36 @@ public class Main implements ActionListener, FocusListener{
     }
 
     // method to send system messages to chat area and remote client
-    public void SendSystemMessage(String message){
-        if (ssm != null && game != null && game.blnStarted){
+    public void SendSystemMessage(String message) {
+        if (ssm != null && game != null && game.blnStarted) {
             theChatArea.append("[SYSTEM]: " + message + "\n");
             ssm.sendText("SYSTEM: " + message);
         }
+    }
+    
+    // show game end screen (win or lose)
+    public void showGameEnd(boolean didWin) {
+        Maintimer.stop();
+        
+        // Clear and set up game end panel with appropriate image
+        gameEndPanel.removeAll();
+        gameEndPanel.setLayout(new BorderLayout());
+        gameEndPanel.setPreferredSize(new Dimension(1280, 720));
+        
+        BufferedImage endImage = didWin ? gameEndWinImage : gameEndLoseImage;
+        if (endImage != null) {
+            JLabel imageLabel = new JLabel(new ImageIcon(endImage));
+            gameEndPanel.add(imageLabel, BorderLayout.CENTER);
+        } else {
+            String message = didWin ? "Victory!" : "Defeat...";
+            JLabel textLabel = new JLabel(message, SwingConstants.CENTER);
+            textLabel.setFont(new Font("Arial", Font.BOLD, 48));
+            gameEndPanel.add(textLabel, BorderLayout.CENTER);
+            System.out.println("Warning: Game end image not found");
+        }
+        
+        SwitchTabs(gameEndPanel);
+        System.out.println(didWin ? "Game Over - You Win!" : "Game Over - You Lose!");
     }
 
 
@@ -135,7 +165,7 @@ public class Main implements ActionListener, FocusListener{
         SendSystemMessage("~~ Drawing Phase ~~");
     }
 
-    // ActionListener methods
+        // ActionListener methods
     @Override
     public void actionPerformed(ActionEvent event){
         // Action handling code
@@ -391,6 +421,13 @@ public class Main implements ActionListener, FocusListener{
                         System.out.println("Invalid PLACE_CARD message format");
                     }
                 }
+            } else if (game != null && game.blnStarted && strLine.startsWith("WINNER: ")) {
+                String winnerName = strLine.substring(8);
+                System.out.println("Game Over! Winner: " + winnerName);
+                
+                // Check if local player won
+                boolean didLocalPlayerWin = winnerName.equals(strP1Name);
+                showGameEnd(didLocalPlayerWin);
             }
 
         } else if (event.getSource() == StartGameButton){
@@ -471,12 +508,12 @@ public class Main implements ActionListener, FocusListener{
             PortField.setText("");
         }
     }
-    public void focusLost(FocusEvent event){
+    public void focusLost(FocusEvent event) {
 
     }
 
 
-
+    
     public Main(){
         // Main menu setup
         theMainFrame.setPreferredSize(new Dimension(1280, 720));
@@ -574,8 +611,22 @@ public class Main implements ActionListener, FocusListener{
         returnMenuButton.addActionListener(this);
 
         returnMenuButton.setVisible(false);
+        
+        // Game end panel setup
+        gameEndPanel.setPreferredSize(new Dimension(1280, 720));
+        gameEndPanel.setLayout(new BorderLayout());
+        
+        gameEndWinImage = getImage("gameendwin.png");
+        gameEndLoseImage = getImage("gameendlose.png");
+        
+        if (gameEndWinImage == null) {
+            System.out.println("Warning: gameendwin.png not found on classpath (Tests/Main.java)");
+        }
+        if (gameEndLoseImage == null) {
+            System.out.println("Warning: gameendlose.png not found on classpath (Tests/Main.java)");
+        }
 
-        // JAnimation Panel setup
+        // the animation setup
         theAnimationPanel.setLayout(null);
 
         theChatArea.setEditable(false);

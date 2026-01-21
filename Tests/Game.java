@@ -28,7 +28,7 @@ public class Game{
     String strEvoDeck[][] = new String[2][4];
 
     // Constructor
-    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel, SuperSocketMaster ssm, Main mainInstance, boolean blnIsHost){
+    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel, SuperSocketMaster ssm, Main mainInstance, boolean blnIsHost) {
         this.p1 = p1;
         this.p2 = p2;
         this.animationPanel = animationPanel;
@@ -556,14 +556,14 @@ public class Game{
     }
     
     // Inner class to store attack actions
-    private class AttackAction{
+    private class AttackAction {
         PlayerClass attacker;
         PlayerClass defender;
         int intSlotIndex;
         CardClass attackingCard;
         boolean isBottomAttacking;
         
-        AttackAction(PlayerClass attacker, PlayerClass defender, int intSlotIndex, CardClass attackingCard, boolean isBottomAttacking){
+        AttackAction(PlayerClass attacker, PlayerClass defender, int intSlotIndex, CardClass attackingCard, boolean isBottomAttacking) {
             this.attacker = attacker;
             this.defender = defender;
             this.intSlotIndex = intSlotIndex;
@@ -655,6 +655,19 @@ public class Game{
                 ssm.sendText("LIFE_UPDATE:" + p1.intLives + ":" + p2.intLives);
             }
             
+            // Check if game is over
+            if (p2.intLives <= 0) {
+                System.out.println("Game Over! " + p1.strPlayerName + " wins!");
+                if (mainInstance != null) {
+                    mainInstance.SendSystemMessage(p1.strPlayerName + " wins!");
+                    mainInstance.showGameEnd(true); // P1 (local player) wins
+                }
+                if (blnIsHost && ssm != null) {
+                    ssm.sendText("WINNER: " + p1.strPlayerName);
+                }
+                return;
+            }
+            
             animationPanel.repaint();
         } else if (intScaleDiff <= -5){
             // P2 is dominating, P1 loses a life
@@ -673,6 +686,19 @@ public class Game{
             if (blnIsHost && ssm != null){
                 ssm.sendText("SCALE_UPDATE:" + p1.intScale + ":" + p2.intScale);
                 ssm.sendText("LIFE_UPDATE:" + p1.intLives + ":" + p2.intLives);
+            }
+            
+            // Check if game is over
+            if (p1.intLives <= 0) {
+                System.out.println("Game Over! " + p2.strPlayerName + " wins!");
+                if (mainInstance != null) {
+                    mainInstance.SendSystemMessage(p2.strPlayerName + " wins!");
+                    mainInstance.showGameEnd(false); // P1 (local player) loses
+                }
+                if (blnIsHost && ssm != null) {
+                    ssm.sendText("WINNER: " + p2.strPlayerName);
+                }
+                return;
             }
             
             animationPanel.repaint();
@@ -758,4 +784,31 @@ public class Game{
         System.out.println("=== Phase Sigils Activated ===");
     }
     
+    // Constructor
+    public Game(PlayerClass p1, PlayerClass p2, JAnimation animationPanel, SuperSocketMaster ssm, Main mainInstance, boolean blnIsHost) {
+        this.p1 = p1;
+        this.p2 = p2;
+        this.animationPanel = animationPanel;
+        this.ssm = ssm;
+        this.mainInstance = mainInstance;
+        this.blnIsHost = blnIsHost;
+        animationPanel.setGame(this);
+    }
+}
+
+// class to store attack action data
+class AttackAction {
+    PlayerClass attacker;
+    PlayerClass defender;
+    int intSlotIndex;
+    CardClass attackingCard;
+    boolean isBottomAttacking;
+    
+    AttackAction(PlayerClass attacker, PlayerClass defender, int intSlotIndex, CardClass attackingCard, boolean isBottomAttacking) {
+        this.attacker = attacker;
+        this.defender = defender;
+        this.intSlotIndex = intSlotIndex;
+        this.attackingCard = attackingCard;
+        this.isBottomAttacking = isBottomAttacking;
+    }
 }
