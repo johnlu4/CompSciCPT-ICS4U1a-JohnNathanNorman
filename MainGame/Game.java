@@ -12,12 +12,12 @@ public class Game{
     private PlayerClass p1;
     private PlayerClass p2;
     public boolean blnStarted = false;
-    public boolean isInitializationPhase = true; // True during first round
+    public boolean isInitializationPhase = true;
     private String currentPhase = "DrawingPhase";
     private JAnimation animationPanel;
     private SuperSocketMaster ssm;
     private Main mainInstance;
-    private boolean blnIsHost; // Track if this client is the host
+    private boolean blnIsHost;
     
     // Attack animation queue
     private List<AttackAction> attackQueue = new ArrayList<>();
@@ -28,8 +28,8 @@ public class Game{
     String strEvoDeck[][] = new String[2][4];
 
     // Methods
+    // Initialize player decks, blood, etc.
     public void startGame(){
-        // Initialize player decks, blood, etc.
         p1.intBlood = 0;
         p2.intBlood = 0;
 
@@ -475,7 +475,6 @@ public class Game{
             intCurrentAttackIndex++;
             processNextAttack();
         }
-        // Client does nothing - waits for next ATTACK_ANIM message from host
     }
     
     // Complete the attack phase and transition to next phase
@@ -500,7 +499,6 @@ public class Game{
             mainInstance.SendSystemMessage("~~ Drawing Phase ~~");
         }
         
-        // Notify other client of phase change back to drawing
         if (ssm != null){
             ssm.sendText("RETURN_TO_DRAWING");
         }

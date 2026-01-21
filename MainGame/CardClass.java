@@ -18,8 +18,8 @@ public class CardClass {
     public int intHealth;
     public int intAttack;
     public int intCost;
-    private SigilClass sigil = null;  // Card HAS-A sigil (composition)
-    public boolean blnRevealed = false; // Track if card has been revealed to opponent
+    private SigilClass sigil = null;
+    public boolean blnRevealed = false;
 
     // Methods
 
@@ -57,17 +57,8 @@ public class CardClass {
         this.sigil = sigil;
     }
     
-    // Constructor with String sigil name (for backwards compatibility)
-    public CardClass(String strName, BufferedImage imgCardImage, int[] arrStats, String strSigil) {
-        this.strName = strName;
-        this.imgCardImage = imgCardImage;
-        this.intHealth = arrStats[0];
-        this.intAttack = arrStats[1];
-        this.intCost = arrStats[2];
-        this.sigil = parseSigil(strSigil);
-    }
     
-    // Helper method to convert string sigil name to SigilClass object
+    // method to convert string sigil name to SigilClass object
     private SigilClass parseSigil(String strSigil) {
         if (strSigil == null || strSigil.equalsIgnoreCase("N/A")) {
             return null;
@@ -92,6 +83,16 @@ public class CardClass {
                 System.out.println("Unknown sigil: " + strSigil);
                 return null;
         }
+    }
+
+    // Constructor with String sigil name (for backwards compatibility)
+    public CardClass(String strName, BufferedImage imgCardImage, int[] arrStats, String strSigil) {
+        this.strName = strName;
+        this.imgCardImage = imgCardImage;
+        this.intHealth = arrStats[0];
+        this.intAttack = arrStats[1];
+        this.intCost = arrStats[2];
+        this.sigil = parseSigil(strSigil);
     }
 }
 
